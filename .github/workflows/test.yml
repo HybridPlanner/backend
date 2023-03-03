@@ -1,4 +1,4 @@
-name: Test project Backend
+name: Test Backend
 
 on:
   push:
@@ -9,9 +9,8 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu:latest
+    runs-on: ubuntu-latest
     steps:
       - run: yarn install
       - run: yarn lint
       - run: yarn test
-        
