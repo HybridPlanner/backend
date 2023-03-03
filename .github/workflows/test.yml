@@ -1,0 +1,17 @@
+name: Test project Backend
+
+on:
+  push:
+    branches: [ "master", "develop" ]
+  pull_request:
+    branches: [ "master", "develop" ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu:latest
+    steps:
+      - run: yarn install
+      - run: yarn lint
+      - run: yarn test
+        
