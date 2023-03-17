@@ -1,0 +1,15 @@
+name: Lint Backend
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  test:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm install
+      - run: npm run lint
