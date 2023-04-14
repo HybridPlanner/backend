@@ -32,6 +32,12 @@
 $ npm install
 ```
 
+## Generate prisma things
+
+```bash
+npx prisma generate
+```
+
 ## Running the app
 
 ```bash
