@@ -19,6 +19,7 @@
     "@nestjs-modules/mailer": "^1.8.1",
     "@nestjs/common": "^9.3.10",
     "@nestjs/core": "^9.3.10",
+    "@nestjs/jwt": "^10.0.3",
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^9.3.10",
     "@prisma/client": "^4.11.0",
