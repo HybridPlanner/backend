@@ -32,7 +32,7 @@
 $ npm install
 ```
 
-## Generate prisma things
+## Generate prisma behaviour
 
 ```bash
 npx prisma generate
@@ -49,6 +49,14 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+```
+
+## Creating migration
+
+### Update migration after updating schema.prisma
+
+```bash
+npx prisma migrate dev --name "name of migration"
 ```
 
 ## Test
