@@ -3,6 +3,7 @@ import { User } from '@prisma/client';
 import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { removePassword } from './auth.utils';
 
 @Injectable()
 export class AuthService {
@@ -16,18 +17,15 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const { password, ...result } = user;
     // TODO: Generate a JWT and return it here
     // instead of the user object
-    return result;
+    return removePassword(user);
   }
 
   async register(registerDto: RegisterDto): Promise<Partial<User>> {
     // TODO: Add encryption to the password
     const user = await this.usersService.create(registerDto);
 
-    const { password, ...result } = user;
-
-    return result;
+    return removePassword(user);
   }
 }
