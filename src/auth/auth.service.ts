@@ -7,12 +7,12 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(
+  public constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
 
-  async login(
+  public async login(
     loginDto: LoginDto,
   ): Promise<{ access_token: string; user: Partial<User> }> {
     const user = await this.usersService.findOneByEmail(loginDto.email);
@@ -32,7 +32,7 @@ export class AuthService {
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<Partial<User>> {
+  public async register(registerDto: RegisterDto): Promise<Partial<User>> {
     // TODO: Add encryption to the password
     const user = await this.usersService.create(registerDto);
 

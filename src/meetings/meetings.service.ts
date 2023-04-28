@@ -6,19 +6,19 @@ import { Meeting } from '@prisma/client';
 
 @Injectable()
 export class MeetingsService {
-  constructor(private database: DatabaseService) {}
+  public constructor(private database: DatabaseService) {}
 
-  create(createMeetingDto: CreateMeetingDto): Promise<Meeting> {
+  public create(createMeetingDto: CreateMeetingDto): Promise<Meeting> {
     return this.database.meeting.create({
       data: createMeetingDto,
     });
   }
 
-  findAll(): Promise<Meeting[]> {
+  public findAll(): Promise<Meeting[]> {
     return this.database.meeting.findMany();
   }
 
-  findOne(id: number): Promise<Meeting> {
+  public findOne(id: number): Promise<Meeting> {
     return this.database.meeting.findUnique({
       where: {
         id,
@@ -26,7 +26,10 @@ export class MeetingsService {
     });
   }
 
-  update(id: number, updateMeetingDto: UpdateMeetingDto): Promise<Meeting> {
+  public update(
+    id: number,
+    updateMeetingDto: UpdateMeetingDto,
+  ): Promise<Meeting> {
     return this.database.meeting.update({
       where: {
         id,
@@ -35,7 +38,7 @@ export class MeetingsService {
     });
   }
 
-  remove(id: number): Promise<Meeting> {
+  public remove(id: number): Promise<Meeting> {
     return this.database.meeting.delete({
       where: {
         id,

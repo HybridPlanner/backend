@@ -10,33 +10,37 @@ import {
 import { MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
+import { Meeting } from '@prisma/client';
 
 @Controller('meetings')
 export class MeetingsController {
-  constructor(private readonly meetingsService: MeetingsService) {}
+  public constructor(private readonly meetingsService: MeetingsService) {}
 
   @Post()
-  create(@Body() createMeetingDto: CreateMeetingDto) {
+  public create(@Body() createMeetingDto: CreateMeetingDto): Promise<Meeting> {
     return this.meetingsService.create(createMeetingDto);
   }
 
   @Get()
-  findAll() {
+  public findAll(): Promise<Meeting[]> {
     return this.meetingsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  public findOne(@Param('id') id: string): Promise<Meeting> {
     return this.meetingsService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMeetingDto: UpdateMeetingDto) {
+  public update(
+    @Param('id') id: string,
+    @Body() updateMeetingDto: UpdateMeetingDto,
+  ): Promise<Meeting> {
     return this.meetingsService.update(+id, updateMeetingDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  public remove(@Param('id') id: string): Promise<Meeting> {
     return this.meetingsService.remove(+id);
   }
 }

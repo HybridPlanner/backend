@@ -1,4 +1,4 @@
 export class CreateMeetingDto {
-  title: string;
-  date: Date;
+  public title: string;
+  public date: Date;
 }

@@ -7,12 +7,12 @@ import { Public } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  public constructor(private authService: AuthService) {}
 
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  login(
+  public login(
     @Body() loginDto: LoginDto,
   ): Promise<{ access_token: string; user: Partial<User> }> {
     return this.authService.login(loginDto);
@@ -21,7 +21,7 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('register')
-  register(@Body() registerDto: RegisterDto): Promise<Partial<User>> {
+  public register(@Body() registerDto: RegisterDto): Promise<Partial<User>> {
     return this.authService.register(registerDto);
   }
 }
