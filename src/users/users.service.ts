@@ -6,15 +6,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private database: DatabaseService) {}
+  public constructor(private database: DatabaseService) {}
 
-  async create(data: CreateUserDto): Promise<User> {
+  public async create(data: CreateUserDto): Promise<User> {
     return this.database.user.create({
       data,
     });
   }
 
-  async findOneById(id: number): Promise<User | undefined> {
+  public async findOneById(id: number): Promise<User | undefined> {
     return this.database.user.findUnique({
       where: {
         id,
@@ -22,7 +22,7 @@ export class UsersService {
     });
   }
 
-  async findOneByEmail(email: string): Promise<User | undefined> {
+  public async findOneByEmail(email: string): Promise<User | undefined> {
     return this.database.user.findUnique({
       where: {
         email,
@@ -30,7 +30,7 @@ export class UsersService {
     });
   }
 
-  async findManyByName(name: string): Promise<User[] | undefined> {
+  public async findManyByName(name: string): Promise<User[] | undefined> {
     return this.database.user.findMany({
       where: {
         name,

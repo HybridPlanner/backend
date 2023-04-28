@@ -7,9 +7,9 @@ import { removePassword } from './auth.utils';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  public constructor(private usersService: UsersService) {}
 
-  async login(loginDto: LoginDto): Promise<Partial<User>> {
+  public async login(loginDto: LoginDto): Promise<Partial<User>> {
     const user = await this.usersService.findOneByEmail(loginDto.email);
 
     // TODO: Add encryption to the password
@@ -22,7 +22,7 @@ export class AuthService {
     return removePassword(user);
   }
 
-  async register(registerDto: RegisterDto): Promise<Partial<User>> {
+  public async register(registerDto: RegisterDto): Promise<Partial<User>> {
     // TODO: Add encryption to the password
     const user = await this.usersService.create(registerDto);
 

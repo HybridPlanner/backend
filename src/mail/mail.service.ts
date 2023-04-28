@@ -23,7 +23,7 @@ export class MailService {
       .then(() => {
         Logger.log(`Confirmation email sent`);
       })
-      .catch((error) => {
+      .catch(() => {
         Logger.error(`Confirmation email failed`);
       });
   }
