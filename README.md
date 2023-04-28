@@ -38,6 +38,12 @@ $ npm install
 npx prisma generate
 ```
 
+## Run prisma migrations
+
+```bash
+npx prisma migrate reset
+```
+
 ## Running the app
 
 ```bash
