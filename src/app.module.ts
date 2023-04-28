@@ -27,7 +27,7 @@ import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.serv
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
-],
+  ],
 })
 export class AppModule {
   public constructor(
