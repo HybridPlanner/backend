@@ -8,21 +8,36 @@ import { MailModule } from './mail/mail.module';
 import { MailService } from './mail/mail.service';
 import { AuthGuard } from './auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.service';
 
 @Module({
-  imports: [MeetingsModule, AuthModule, UsersModule, MailModule],
+  imports: [
+    MeetingsModule,
+    AuthModule,
+    UsersModule,
+    MailModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [AppController],
   providers: [
     DatabaseService,
+    MeetingScheduleService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
-  ],
+],
 })
 export class AppModule {
-  // send email
-  public constructor(private mailService: MailService) {
-    this.mailService.sendUserConfirmation();
+  public constructor(
+    private mailService: MailService,
+    private meetingScheduleService: MeetingScheduleService,
+  ) {
+    const inOneMinute = new Date(Date.now() + 60 * 1000);
+    this.meetingScheduleService.scheduleMail(
+      inOneMinute,
+      'hello.world@gmail.com',
+    );
   }
 }
