@@ -6,15 +6,29 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
 import { MailService } from './mail/mail.service';
+import { ScheduleModule } from '@nestjs/schedule';
+import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.service';
 
 @Module({
-  imports: [MeetingsModule, AuthModule, UsersModule, MailModule],
+  imports: [
+    MeetingsModule,
+    AuthModule,
+    UsersModule,
+    MailModule,
+    ScheduleModule.forRoot(),
+  ],
   controllers: [AppController],
-  providers: [DatabaseService],
+  providers: [DatabaseService, MeetingScheduleService],
 })
 export class AppModule {
-  // send email
-  public constructor(private mailService: MailService) {
-    this.mailService.sendUserConfirmation();
+  public constructor(
+    private mailService: MailService,
+    private meetingScheduleService: MeetingScheduleService,
+  ) {
+    const inOneMinute = new Date(Date.now() + 60 * 1000);
+    this.meetingScheduleService.scheduleMail(
+      inOneMinute,
+      'hello.world@gmail.com',
+    );
   }
 }

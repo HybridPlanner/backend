@@ -27,6 +27,6 @@ import { join } from 'path';
     }),
   ],
   providers: [MailService],
-  exports: [MailService], // 👈 export for DI
+  exports: [MailService],
 })
 export class MailModule {}

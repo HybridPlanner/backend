@@ -5,12 +5,12 @@ import { Injectable, Logger } from '@nestjs/common';
 export class MailService {
   public constructor(private mailerService: MailerService) {}
 
-  public async sendUserConfirmation(): Promise<void> {
+  public async sendUserConfirmation(to: string): Promise<void> {
     const url = `example.com/auth/confirm`;
 
     this.mailerService
       .sendMail({
-        to: 'samymosa02@gmail.com',
+        to: to,
         // from: '"Support Team" <support@example.com>', // override default from
         subject: 'Welcome to Hybrid Planner! Confirm your Email',
         template: 'confirmation', // `.hbs` extension is appended automatically
