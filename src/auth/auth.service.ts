@@ -4,6 +4,7 @@ import { UsersService } from 'src/users/users.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -17,13 +18,14 @@ export class AuthService {
   ): Promise<{ access_token: string; user: Partial<User> }> {
     const user = await this.usersService.findOneByEmail(loginDto.email);
 
-    // TODO: Add encryption to the password
-    if (user?.password !== loginDto.password) {
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
       throw new UnauthorizedException();
     }
-
-    // TODO: Generate a JWT and return it here
-    // instead of the user object
 
     const payload = { email: user.email, id: user.id, name: user.name };
     return {
@@ -33,8 +35,12 @@ export class AuthService {
   }
 
   public async register(registerDto: RegisterDto): Promise<Partial<User>> {
-    // TODO: Add encryption to the password
-    const user = await this.usersService.create(registerDto);
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(registerDto.password, saltRounds);
+    const user = await this.usersService.create({
+      ...registerDto,
+      password: hashedPassword,
+    });
 
     const payload = { email: user.email, id: user.id, name: user.name };
 
