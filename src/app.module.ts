@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
 import { MailService } from './mail/mail.service';
+import { AuthGuard } from './auth/auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.service';
 
@@ -18,7 +20,14 @@ import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.serv
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
-  providers: [DatabaseService, MeetingScheduleService],
+  providers: [
+    DatabaseService,
+    MeetingScheduleService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {
   public constructor(
