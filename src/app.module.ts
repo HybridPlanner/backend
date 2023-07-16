@@ -10,6 +10,7 @@ import { AuthGuard } from './auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.service';
+import { RainbowService } from './rainbow/rainbow.service';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.serv
   providers: [
     DatabaseService,
     MeetingScheduleService,
+    RainbowService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
@@ -33,11 +35,12 @@ export class AppModule {
   public constructor(
     private mailService: MailService,
     private meetingScheduleService: MeetingScheduleService,
+    private rainbowService: RainbowService,
   ) {
-    const inOneMinute = new Date(Date.now() + 60 * 1000);
-    this.meetingScheduleService.scheduleMail(
-      inOneMinute,
-      'hello.world@gmail.com',
-    );
+    // const inOneMinute = new Date(Date.now() + 60 * 1000);
+    // this.meetingScheduleService.scheduleMail(
+    //   inOneMinute,
+    //   'hello.world@gmail.com',
+    // );
   }
 }
