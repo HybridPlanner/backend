@@ -4,6 +4,7 @@ import * as RainbowSDK from 'rainbow-node-sdk';
 import { type BubblesService } from 'rainbow-node-sdk/lib/services/BubblesService';
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 import { EnvConfig } from '../../config';
+import { Contact } from 'rainbow-node-sdk/lib/common/models/Contact';
 
 @Injectable()
 export class RainbowService implements OnApplicationShutdown {
@@ -59,6 +60,18 @@ export class RainbowService implements OnApplicationShutdown {
 
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
+      // Start a conference
+      Logger.log(`Calling "${BUBBLE_NAME}"...`);
+      await this.callBubble(bubble);
+
+      await new Promise((resolve) => setTimeout(resolve, 15000));
+
+      // Hangup conference
+      Logger.log(`Hanging up "${BUBBLE_NAME}"...`);
+      await this.hangupBubble(bubble);
+
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
       // Delete bubble
       Logger.log(`Deleting "${BUBBLE_NAME}"...`);
       await this.deleteBubble(bubble);
@@ -92,5 +105,45 @@ export class RainbowService implements OnApplicationShutdown {
 
   public async deleteBubble(bubble: Bubble): Promise<void> {
     await (this.rainbowSDK.bubbles as BubblesService).deleteBubble(bubble);
+  }
+
+  public async addRainbowUserToBubble(
+    bubble: Bubble,
+    user: Contact,
+    inviteReason: string,
+  ): Promise<void> {
+    await (this.rainbowSDK.bubbles as BubblesService).inviteContactToBubble(
+      bubble,
+      user,
+      false,
+      false,
+      inviteReason,
+    );
+  }
+
+  public async removeRainbowUserFromBubble(
+    bubble: Bubble,
+    user: Contact,
+  ): Promise<void> {
+    await (this.rainbowSDK.bubbles as BubblesService).removeContactFromBubble(
+      bubble,
+      user,
+    );
+  }
+
+  public async callBubble(bubble: Bubble): Promise<unknown> {
+    const conference = await (
+      this.rainbowSDK.bubbles as BubblesService
+    ).startConferenceOrWebinarInARoom(bubble.id);
+
+    return conference;
+  }
+
+  public async hangupBubble(bubble: Bubble): Promise<unknown> {
+    const conference = await (
+      this.rainbowSDK.bubbles as BubblesService
+    ).stopConferenceOrWebinar(bubble.id);
+
+    return conference;
   }
 }
