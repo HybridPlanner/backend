@@ -1,6 +1,8 @@
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as RainbowSDK from 'rainbow-node-sdk';
+import { type BubblesService } from 'rainbow-node-sdk/lib/services/BubblesService';
+import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 import { EnvConfig } from '../../config';
 
 @Injectable()
@@ -39,9 +41,56 @@ export class RainbowService implements OnApplicationShutdown {
     });
 
     this.rainbowSDK.start();
+
+    this.rainbowSDK.events.on('rainbow_onready', async () => {
+      Logger.log('Rainbow SDK started');
+
+      const BUBBLE_NAME = 'Demo';
+      const BUBBLE_DESCRIPTION = 'Demo bubble';
+
+      let bubble = this.getBubble(BUBBLE_NAME);
+      if (!bubble) {
+        Logger.log(`"${BUBBLE_NAME}" not found, creating...`);
+        bubble = await this.createBubble(BUBBLE_NAME, BUBBLE_DESCRIPTION);
+        Logger.log(`"${BUBBLE_NAME}" created`);
+      } else {
+        Logger.log(`"${BUBBLE_NAME}" found`);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      // Delete bubble
+      Logger.log(`Deleting "${BUBBLE_NAME}"...`);
+      await this.deleteBubble(bubble);
+      Logger.log(`"${BUBBLE_NAME}" deleted`);
+    });
   }
 
-  public onApplicationShutdown(): void {
-    this.rainbowSDK.stop();
+  public async onApplicationShutdown(): Promise<void> {
+    await this.rainbowSDK.stop();
+  }
+
+  public async createBubble(
+    name: string,
+    description: string,
+  ): Promise<Bubble> {
+    const bubble = (await (
+      this.rainbowSDK.bubbles as BubblesService
+    ).createBubble(name, description, false)) as Bubble;
+
+    return bubble;
+  }
+
+  public getBubble(name: string): Bubble {
+    const bubbles = (
+      this.rainbowSDK.bubbles as BubblesService
+    ).getAllOwnedBubbles();
+    const bubble = bubbles.find((b) => b.name === name);
+
+    return bubble;
+  }
+
+  public async deleteBubble(bubble: Bubble): Promise<void> {
+    await (this.rainbowSDK.bubbles as BubblesService).deleteBubble(bubble);
   }
 }
