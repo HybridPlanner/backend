@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { DatabaseService } from './services/database/database.service';
@@ -10,10 +11,11 @@ import { AuthGuard } from './auth/auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.service';
-import { RainbowService } from './rainbow/rainbow.service';
+import { RainbowService } from './services/rainbow/rainbow.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MeetingsModule,
     AuthModule,
     UsersModule,
