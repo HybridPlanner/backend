@@ -46,7 +46,7 @@ export class RainbowService implements OnApplicationShutdown {
     this.rainbowSDK.events.on('rainbow_onready', async () => {
       Logger.log('Rainbow SDK started');
 
-      const BUBBLE_NAME = 'Demo';
+      /*const BUBBLE_NAME = 'Demo';
       const BUBBLE_DESCRIPTION = 'Demo bubble';
 
       let bubble = this.getBubble(BUBBLE_NAME);
@@ -75,7 +75,7 @@ export class RainbowService implements OnApplicationShutdown {
       // Delete bubble
       Logger.log(`Deleting "${BUBBLE_NAME}"...`);
       await this.deleteBubble(bubble);
-      Logger.log(`"${BUBBLE_NAME}" deleted`);
+      Logger.log(`"${BUBBLE_NAME}" deleted`);*/
     });
   }
 
