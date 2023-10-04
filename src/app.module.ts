@@ -3,12 +3,11 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { DatabaseService } from './services/database/database.service';
 import { MeetingsModule } from './meetings/meetings.module';
-import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
 import { MailService } from './mail/mail.service';
-import { AuthGuard } from './auth/auth.guard';
-import { APP_GUARD } from '@nestjs/core';
+//import { AuthGuard } from './auth/auth.guard';
+//import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.service';
 import { RainbowService } from './services/rainbow/rainbow.service';
@@ -17,7 +16,8 @@ import { RainbowService } from './services/rainbow/rainbow.service';
   imports: [
     ConfigModule.forRoot(),
     MeetingsModule,
-    AuthModule,
+    // Disabled for now, authentication should be added later as a bonus
+    // AuthModule,
     UsersModule,
     MailModule,
     ScheduleModule.forRoot(),
@@ -27,10 +27,10 @@ import { RainbowService } from './services/rainbow/rainbow.service';
     DatabaseService,
     MeetingScheduleService,
     RainbowService,
-    {
+    /*{
       provide: APP_GUARD,
       useClass: AuthGuard,
-    },
+    },*/
   ],
 })
 export class AppModule {

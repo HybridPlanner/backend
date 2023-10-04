@@ -6,11 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { Meeting } from '@prisma/client';
+import { isBefore } from 'date-fns';
 
 @Controller('meetings')
 export class MeetingsController {
@@ -22,8 +25,21 @@ export class MeetingsController {
   }
 
   @Get()
-  public findAll(): Promise<Meeting[]> {
-    return this.meetingsService.findAll();
+  public async findAll(
+    @Query('previous') previous?: number,
+  ): Promise<{ meetings: Meeting[] }> {
+    if (!previous) {
+      const meetings = await this.meetingsService.findAll();
+      return { meetings };
+    }
+
+    const previousDate = new Date(previous);
+    if (!isBefore(previousDate, new Date())) {
+      throw new BadRequestException('Previous date must be in the past');
+    }
+
+    const meetings = await this.meetingsService.findAllPrevious(previousDate);
+    return { meetings };
   }
 
   @Get(':id')
