@@ -24,7 +24,7 @@ export class MeetingsService {
     return this.database.meeting.findMany({
       take: limit,
       where: {
-        date: {
+        start_date: {
           lte: previous,
         },
       },
