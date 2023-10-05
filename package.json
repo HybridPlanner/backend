@@ -14,7 +14,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "migrate": "prisma migrate dev --name",
-    "update-db": "prisma db push --preview-feature"
+    "update-db": "prisma db push"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.9.1",
