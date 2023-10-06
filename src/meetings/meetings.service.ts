@@ -54,11 +54,11 @@ export class MeetingsService {
     });
   }
 
-  public update(
+  public async update(
     id: number,
     updateMeetingDto: UpdateMeetingDto,
   ): Promise<Meeting> {
-    return this.database.meeting.update({
+    const meeting = await this.database.meeting.update({
       where: {
         id,
       },
@@ -68,6 +68,9 @@ export class MeetingsService {
         end_date: new Date(updateMeetingDto.end_date),
       },
     });
+
+    this.eventEmitter.emit('meeting.update', meeting);
+    return meeting;
   }
 
   public async delete(id: number): Promise<Meeting> {
