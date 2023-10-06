@@ -14,7 +14,11 @@ export class MeetingsService {
 
   public async create(createMeetingDto: CreateMeetingDto): Promise<Meeting> {
     const meeting: Meeting = await this.database.meeting.create({
-      data: createMeetingDto,
+      data: {
+        title: createMeetingDto.title,
+        start_date: new Date(createMeetingDto.start_date),
+        end_date: new Date(createMeetingDto.end_date),
+      },
     });
     this.eventEmitter.emit('meeting.create', meeting);
     return meeting;
@@ -23,6 +27,11 @@ export class MeetingsService {
   public findAll(limit?: number): Promise<Meeting[]> {
     return this.database.meeting.findMany({
       take: limit,
+      where: {
+        start_date: {
+          gte: new Date(),
+        },
+      },
     });
   }
 
@@ -31,7 +40,7 @@ export class MeetingsService {
       take: limit,
       where: {
         start_date: {
-          lte: previous,
+          lt: previous,
         },
       },
     });
@@ -49,12 +58,17 @@ export class MeetingsService {
     id: number,
     updateMeetingDto: UpdateMeetingDto,
   ): Promise<Meeting> {
-    const meeting: Meeting = await this.database.meeting.update({
+    const meeting = await this.database.meeting.update({
       where: {
         id,
       },
-      data: updateMeetingDto,
+      data: {
+        ...updateMeetingDto,
+        start_date: new Date(updateMeetingDto.start_date),
+        end_date: new Date(updateMeetingDto.end_date),
+      },
     });
+
     this.eventEmitter.emit('meeting.update', meeting);
     return meeting;
   }
