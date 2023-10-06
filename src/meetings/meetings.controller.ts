@@ -8,15 +8,18 @@ import {
   Delete,
   BadRequestException,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { Meeting } from '@prisma/client';
-import { isBefore } from 'date-fns';
+import { isAfter, isValid } from 'date-fns';
 
 @Controller('meetings')
 export class MeetingsController {
+  private readonly logger = new Logger(MeetingsController.name);
+
   public constructor(private readonly meetingsService: MeetingsService) {}
 
   @Post()
@@ -26,17 +29,26 @@ export class MeetingsController {
 
   @Get()
   public async findAll(
-    @Query('previous') previous?: number,
+    @Query('before') previous?: number,
   ): Promise<{ meetings: Meeting[] }> {
     if (!previous) {
       const meetings = await this.meetingsService.findAll();
       return { meetings };
     }
 
-    const previousDate = new Date(previous);
-    if (!isBefore(previousDate, new Date())) {
+    const previousDate = new Date(previous * 1000);
+
+    if (!isValid(previousDate)) {
+      throw new BadRequestException(
+        'Previous date is not valid, expected timestamp',
+      );
+    }
+
+    if (isAfter(previousDate, new Date())) {
       throw new BadRequestException('Previous date must be in the past');
     }
+
+    this.logger.debug(`Finding meetings before ${previousDate.toISOString()}`);
 
     const meetings = await this.meetingsService.findAllPrevious(previousDate);
     return { meetings };
