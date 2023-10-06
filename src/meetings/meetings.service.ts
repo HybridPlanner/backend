@@ -3,15 +3,21 @@ import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { DatabaseService } from 'src/services/database/database.service';
 import { Meeting } from '@prisma/client';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class MeetingsService {
-  public constructor(private database: DatabaseService) {}
+  public constructor(
+    private database: DatabaseService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
-  public create(createMeetingDto: CreateMeetingDto): Promise<Meeting> {
-    return this.database.meeting.create({
+  public async create(createMeetingDto: CreateMeetingDto): Promise<Meeting> {
+    const meeting: Meeting = await this.database.meeting.create({
       data: createMeetingDto,
     });
+    this.eventEmitter.emit('meeting.create', meeting);
+    return meeting;
   }
 
   public findAll(): Promise<Meeting[]> {
@@ -26,23 +32,27 @@ export class MeetingsService {
     });
   }
 
-  public update(
+  public async update(
     id: number,
     updateMeetingDto: UpdateMeetingDto,
   ): Promise<Meeting> {
-    return this.database.meeting.update({
+    const meeting: Meeting = await this.database.meeting.update({
       where: {
         id,
       },
       data: updateMeetingDto,
     });
+    this.eventEmitter.emit('meeting.update', meeting);
+    return meeting;
   }
 
-  public remove(id: number): Promise<Meeting> {
-    return this.database.meeting.delete({
+  public async delete(id: number): Promise<Meeting> {
+    const meeting: Meeting = await this.database.meeting.delete({
       where: {
         id,
       },
     });
+    this.eventEmitter.emit('meeting.delete', meeting);
+    return meeting;
   }
 }

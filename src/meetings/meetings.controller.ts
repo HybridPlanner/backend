@@ -40,7 +40,7 @@ export class MeetingsController {
   }
 
   @Delete(':id')
-  public remove(@Param('id') id: string): Promise<Meeting> {
-    return this.meetingsService.remove(+id);
+  public delete(@Param('id') id: string): Promise<Meeting> {
+    return this.meetingsService.delete(+id);
   }
 }

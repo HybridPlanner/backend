@@ -12,10 +12,12 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.service';
 import { RainbowService } from './services/rainbow/rainbow.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    EventEmitterModule.forRoot(),
     MeetingsModule,
     AuthModule,
     UsersModule,

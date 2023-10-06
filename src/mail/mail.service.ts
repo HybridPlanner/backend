@@ -1,10 +1,12 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class MailService {
   public constructor(private mailerService: MailerService) {}
 
+  @OnEvent('user.create')
   public async sendUserConfirmation(to: string): Promise<void> {
     const url = `example.com/auth/confirm`;
 
