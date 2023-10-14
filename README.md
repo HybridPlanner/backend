@@ -26,6 +26,19 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Utilisation Docker
+
+```bash
+# Définir les variables d'environnement
+$ cp .env.example .env
+
+# Démarrer les conteneurs
+$ docker-compose up -d
+
+# Rentrer dans le conteneur
+$ docker-compose exec -it app bash
+```
+
 ## Installation
 
 ```bash
