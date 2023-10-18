@@ -16,6 +16,7 @@ export class MeetingsService {
     const meeting: Meeting = await this.database.meeting.create({
       data: {
         title: createMeetingDto.title,
+        description: createMeetingDto.description,
         start_date: new Date(createMeetingDto.start_date),
         end_date: new Date(createMeetingDto.end_date),
       },
