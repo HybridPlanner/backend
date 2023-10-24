@@ -26,17 +26,24 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Utilisation Docker
+## Docker usage
 
 ```bash
-# Définir les variables d'environnement
+# Create the hybridplanner network
+# This allows the frontend and backend to communicate with each other
+$ docker network create hybridplanner
+
+# Define the environment variables 
 $ cp .env.example .env
 
-# Démarrer les conteneurs
+# Start the containers
 $ docker-compose up -d
 
-# Rentrer dans le conteneur
-$ docker-compose exec -it app bash
+# Enter the api container
+$ docker-compose exec -it api bash
+
+# Stop the containers
+$ docker-compose down
 ```
 
 ## Installation
