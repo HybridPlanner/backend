@@ -11,13 +11,14 @@ datasource db {
 }
 
 model Meeting {
-  id        Int      @id @default(autoincrement())
-  title     String
-  start_date      DateTime
-  end_date     DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  attendees User[]
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  start_date  DateTime
+  end_date    DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  attendees   User[]
 }
 
 model User {
