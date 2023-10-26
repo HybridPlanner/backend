@@ -40,7 +40,7 @@ $ cp .env.example .env
 $ docker-compose up -d
 
 # Enter the api container
-$ docker-compose exec -it api bash
+$ docker-compose exec -it app bash
 
 # Stop the containers
 $ docker-compose down
