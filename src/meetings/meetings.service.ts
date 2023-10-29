@@ -15,10 +15,19 @@ export class MeetingsService {
   public async create(createMeetingDto: CreateMeetingDto): Promise<Meeting> {
     const meeting: Meeting = await this.database.meeting.create({
       data: {
-        title: createMeetingDto.title,
-        description: createMeetingDto.description,
+        ...createMeetingDto,
         start_date: new Date(createMeetingDto.start_date),
         end_date: new Date(createMeetingDto.end_date),
+        attendees: {
+          connectOrCreate: createMeetingDto.attendees.map((email) => ({
+            where: {
+              email,
+            },
+            create: {
+              email,
+            },
+          })),
+        },
       },
     });
     this.eventEmitter.emit('meeting.create', meeting);
@@ -67,6 +76,16 @@ export class MeetingsService {
         ...updateMeetingDto,
         start_date: new Date(updateMeetingDto.start_date),
         end_date: new Date(updateMeetingDto.end_date),
+        attendees: {
+          connectOrCreate: updateMeetingDto.attendees.map((email) => ({
+            where: {
+              email,
+            },
+            create: {
+              email,
+            },
+          })),
+        },
       },
     });
 
