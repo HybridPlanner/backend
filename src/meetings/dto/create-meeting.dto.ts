@@ -3,4 +3,5 @@ export class CreateMeetingDto {
   public description?: string;
   public start_date: number;
   public end_date: number;
+  public attendees: string[];
 }
