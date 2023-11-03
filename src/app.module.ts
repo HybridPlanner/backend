@@ -5,7 +5,7 @@ import { DatabaseService } from './services/database/database.service';
 import { MeetingsModule } from './meetings/meetings.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
-import { MailService } from './mail/mail.service';
+// import { MailService } from './mail/mail.service';
 //import { AuthGuard } from './auth/auth.guard';
 //import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -38,12 +38,12 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
   ],
 })
 export class AppModule {
-  public constructor(
-    private mailService: MailService,
-    private schedulerService: SchedulerService,
-    private rainbowService: RainbowService,
-  ) {
-    // const inFiveSeconds = new Date(Date.now() + 5 * 1000);
-    // this.schedulerService.test(inFiveSeconds);
-  }
+  // public constructor
+  //   private mailService: MailService,
+  //   private schedulerService: SchedulerService,
+  //   private rainbowService: RainbowService,
+  //   () {
+  //   const inFiveSeconds = new Date(Date.now() + 5 * 1000);
+  //   this.schedulerService.test(inFiveSeconds);
+  // }
 }
