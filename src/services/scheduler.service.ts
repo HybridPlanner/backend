@@ -18,4 +18,12 @@ export class SchedulerService {
     this.schedulerRegistry.addCronJob(`mail-${to}-${time}`, job);
     job.start();
   }
+
+  public test(time: Date): void {
+    const job = new CronJob(time, () => {
+      Logger.log(`Test`);
+    });
+    this.schedulerRegistry.addCronJob(`test-${time}`, job);
+    job.start();
+  }
 }

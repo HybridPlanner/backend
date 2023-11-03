@@ -4,4 +4,5 @@ export interface Meeting {
   date: Date;
   createdAt: Date;
   updatedAt: Date;
+  bubbleId?: number;
 }

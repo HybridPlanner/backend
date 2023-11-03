@@ -45,6 +45,17 @@ export class MeetingsService {
     });
   }
 
+  public findAllUntilDate(date: Date, limit?: number): Promise<Meeting[]> {
+    return this.database.meeting.findMany({
+      take: limit,
+      where: {
+        start_date: {
+          lte: date,
+        },
+      },
+    });
+  }
+
   public findAllPrevious(previous: Date, limit?: number): Promise<Meeting[]> {
     return this.database.meeting.findMany({
       take: limit,

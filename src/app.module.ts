@@ -10,6 +10,7 @@ import { MailService } from './mail/mail.service';
 //import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerService } from './services/scheduler.service';
+import { TasksService } from './services/tasks.service';
 import { RainbowService } from './services/rainbow/rainbow.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
@@ -28,6 +29,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
   providers: [
     DatabaseService,
     SchedulerService,
+    TasksService,
     RainbowService,
     /*{
       provide: APP_GUARD,
@@ -41,10 +43,7 @@ export class AppModule {
     private schedulerService: SchedulerService,
     private rainbowService: RainbowService,
   ) {
-    // const inOneMinute = new Date(Date.now() + 60 * 1000);
-    // this.schedulerService.scheduleMail(
-    //   inOneMinute,
-    //   'hello.world@gmail.com',
-    // );
+    // const inFiveSeconds = new Date(Date.now() + 5 * 1000);
+    // this.schedulerService.test(inFiveSeconds);
   }
 }
