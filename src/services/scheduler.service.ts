@@ -4,7 +4,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 
 @Injectable()
-export class MeetingScheduleService {
+export class SchedulerService {
   public constructor(
     private mailService: MailService,
     private schedulerRegistry: SchedulerRegistry,
