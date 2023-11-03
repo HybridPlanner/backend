@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { DatabaseService } from 'src/services/database/database.service';
-import { Meeting } from '@prisma/client';
+import { Attendee, Meeting } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
@@ -51,6 +51,16 @@ export class MeetingsService {
       where: {
         start_date: {
           lt: previous,
+        },
+      },
+    });
+  }
+
+  public findAttendees(email: string): Promise<Attendee[]> {
+    return this.database.attendee.findMany({
+      where: {
+        email: {
+          contains : email,
         },
       },
     });

@@ -13,7 +13,7 @@ import {
 import { MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
-import { Meeting } from '@prisma/client';
+import { Attendee, Meeting } from '@prisma/client';
 import { isAfter, isValid } from 'date-fns';
 
 @Controller('meetings')
@@ -52,6 +52,11 @@ export class MeetingsController {
 
     const meetings = await this.meetingsService.findAllPrevious(previousDate);
     return { meetings };
+  }
+
+  @Get('/attendees?')
+  public findAttendees(@Query('email') email: string): Promise<Attendee[]> {
+    return this.meetingsService.findAttendees(email);
   }
 
   @Get(':id')
