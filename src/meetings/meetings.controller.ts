@@ -9,6 +9,7 @@ import {
   BadRequestException,
   Query,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
@@ -55,8 +56,19 @@ export class MeetingsController {
   }
 
   @Get(':id')
-  public findOne(@Param('id') id: string): Promise<Meeting> {
-    return this.meetingsService.findOne(+id);
+  public async findOne(@Param('id') id: string): Promise<Meeting> {
+
+    if (isNaN(+id)) {
+      throw new BadRequestException('ID must be a number');
+    }
+
+    const meeting = await this.meetingsService.findOne(+id);
+
+    if (!meeting) {
+      throw new NotFoundException(`Meeting ${id} not found`);
+    }
+
+    return meeting;
   }
 
   @Patch(':id')
