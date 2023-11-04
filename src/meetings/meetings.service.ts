@@ -60,14 +60,14 @@ export class MeetingsService {
     return this.database.attendee.findMany({
       where: {
         email: {
-          contains : email,
+          contains: email,
         },
       },
     });
   }
 
   public findOne(id: number): Promise<Meeting> {
-    return this.database.meeting.findUnique({
+    return this.database.meeting.findUniqueOrThrow({
       where: {
         id,
       },
