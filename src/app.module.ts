@@ -9,7 +9,7 @@ import { MailService } from './mail/mail.service';
 //import { AuthGuard } from './auth/auth.guard';
 //import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { MeetingScheduleService } from './meeting-schedule/meeting-schedule.service';
+import { SchedulerService } from './services/scheduler.service';
 import { RainbowService } from './services/rainbow/rainbow.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
@@ -27,7 +27,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
   controllers: [AppController],
   providers: [
     DatabaseService,
-    MeetingScheduleService,
+    SchedulerService,
     RainbowService,
     /*{
       provide: APP_GUARD,
@@ -38,11 +38,11 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 export class AppModule {
   public constructor(
     private mailService: MailService,
-    private meetingScheduleService: MeetingScheduleService,
+    private schedulerService: SchedulerService,
     private rainbowService: RainbowService,
   ) {
     // const inOneMinute = new Date(Date.now() + 60 * 1000);
-    // this.meetingScheduleService.scheduleMail(
+    // this.schedulerService.scheduleMail(
     //   inOneMinute,
     //   'hello.world@gmail.com',
     // );
