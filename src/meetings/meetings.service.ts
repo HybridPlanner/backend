@@ -84,10 +84,14 @@ export class MeetingsService {
       },
       data: {
         ...updateMeetingDto,
-        start_date: new Date(updateMeetingDto.start_date),
-        end_date: new Date(updateMeetingDto.end_date),
+        ...(updateMeetingDto.start_date && {
+          start_date: new Date(updateMeetingDto.start_date),
+        }),
+        ...(updateMeetingDto.end_date && {
+          end_date: new Date(updateMeetingDto.end_date),
+        }),
         attendees: {
-          connectOrCreate: updateMeetingDto.attendees.map((email) => ({
+          connectOrCreate: updateMeetingDto.attendees?.map((email) => ({
             where: {
               email,
             },
