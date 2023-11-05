@@ -4,4 +4,5 @@ export class CreateMeetingDto {
   public start_date: number;
   public end_date: number;
   public attendees: string[];
+  public bubbleId?: string;
 }
