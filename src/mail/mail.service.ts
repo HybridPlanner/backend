@@ -6,7 +6,10 @@ import { DatabaseService } from 'src/services/database/database.service';
 import { createIcsFile } from 'src/utils/ics-util';
 @Injectable()
 export class MailService {
-  public constructor(private mailerService: MailerService, private database: DatabaseService) {}
+  public constructor(
+    private mailerService: MailerService,
+    private database: DatabaseService,
+  ) {}
 
   @OnEvent('user.create')
   public async sendUserConfirmation(to: string): Promise<void> {
@@ -33,10 +36,7 @@ export class MailService {
   }
 
   @OnEvent('meeting.create')
-  public async sendMeetingInvitation(
-    meeting: Meeting,
-  ): Promise<void> {
-
+  public async sendMeetingInvitation(meeting: Meeting): Promise<void> {
     const meetingWithAttendees = await this.database.meeting.findUnique({
       where: { id: meeting.id },
       include: { attendees: true },
@@ -44,7 +44,10 @@ export class MailService {
 
     const icsFile = await createIcsFile(meeting, this.database);
     const url = `http://localhost:5173/meeting/${meeting.id}`;
-    const fileName = `meeting-${meeting.title.replace(/[^a-zA-Z0-9]/g, '')}.ics`; // remove special characters from title
+    const fileName = `meeting-${meeting.title.replace(
+      /[^a-zA-Z0-9]/g,
+      '',
+    )}.ics`; // remove special characters from title
 
     await Promise.all(
       meetingWithAttendees.attendees.map((attendee) =>

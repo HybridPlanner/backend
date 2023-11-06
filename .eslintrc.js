@@ -23,6 +23,5 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'error',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'error',
-    "endOfLine": "auto",
   },
 };
