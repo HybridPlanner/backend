@@ -49,25 +49,21 @@ export class MailService {
       '',
     )}.ics`; // remove special characters from title
 
-    await Promise.all(
-      meetingWithAttendees.attendees.map((attendee) =>
-        this.mailerService.sendMail({
-          to: attendee.email,
-          subject: 'You are invited to a meeting',
-          template: 'meetings/invitation',
-          context: {
-            meeting,
-            url,
-          },
-          attachments: [
-            {
-              filename: fileName,
-              content: Buffer.from(icsFile, 'utf-8'),
-              contentType: 'text/calendar',
-            },
-          ],
-        }),
-      ),
-    );
+    this.mailerService.sendMail({
+      bcc: meetingWithAttendees.attendees.map((attendee) => attendee.email),
+      subject: 'You are invited to a meeting',
+      template: 'meetings/invitation',
+      context: {
+        meeting,
+        url,
+      },
+      attachments: [
+        {
+          filename: fileName,
+          content: Buffer.from(icsFile, 'utf-8'),
+          contentType: 'text/calendar',
+        },
+      ],
+    });
   }
 }
