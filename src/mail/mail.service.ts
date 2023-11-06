@@ -44,14 +44,14 @@ export class MailService {
 
     const icsFile = await createIcsFile(meeting, this.database);
     const url = `example.com/meetings/${meeting.id}`;
-    const fileName = `meeting-${meeting.title.replace(/[^a-zA-Z0-9]/g, '')}.ics`;
+    const fileName = `meeting-${meeting.title.replace(/[^a-zA-Z0-9]/g, '')}.ics`; // remove special characters from title
 
     await Promise.all(
       meetingWithAttendees.attendees.map((attendee) =>
         this.mailerService.sendMail({
           to: attendee.email,
           subject: 'You are invited to a meeting',
-          template: 'meeting-invitation', // You will need to create this template
+          template: 'meeting-invitation',
           context: {
             meeting,
             url,
