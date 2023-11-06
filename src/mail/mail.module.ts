@@ -9,7 +9,7 @@ import { DatabaseService } from 'src/services/database/database.service';
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: 'localhost',
+        host: process.env.MAILHOG_HOST || 'mailhog',
         port: 1025,
         secure: false,
         debug: true,

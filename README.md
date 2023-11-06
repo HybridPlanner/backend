@@ -101,6 +101,7 @@ $ npm run test:cov
 ## Mailhog
 
 - Make sure to run the mailhog container
+- Upate the values in the .env file `MAILHOG_HOST` either localhost or mailhog depending on the environment you are running (docker or local)
 - To use mailhog locally, go to http://localhost:8025/
 
 ## Support
