@@ -43,7 +43,7 @@ export class MailService {
     });
 
     const icsFile = await createIcsFile(meeting, this.database);
-    const url = `http://localhost:5173/meeting/${meeting.id}`;
+    const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
     const fileName = `meeting-${meeting.title.replace(
       /[^a-zA-Z0-9]/g,
       '',
