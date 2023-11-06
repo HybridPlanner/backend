@@ -35,7 +35,7 @@ export async function createIcsFile(
       rsvp: true,
       partstat: 'NEEDS-ACTION',
     })),
-    url: `https://example.com/meetings/${meeting.id}`,
+    url: `http://localhost:5173/meeting/${meeting.id}`,
   });
 
   if (error) {
