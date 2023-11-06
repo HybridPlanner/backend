@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { DatabaseService } from 'src/services/database/database.service';
-import { Meeting } from '@prisma/client';
+import { Attendee, Meeting } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
@@ -56,8 +56,18 @@ export class MeetingsService {
     });
   }
 
+  public findAttendees(email: string): Promise<Attendee[]> {
+    return this.database.attendee.findMany({
+      where: {
+        email: {
+          contains: email,
+        },
+      },
+    });
+  }
+
   public findOne(id: number): Promise<Meeting> {
-    return this.database.meeting.findUnique({
+    return this.database.meeting.findUniqueOrThrow({
       where: {
         id,
       },
@@ -74,10 +84,14 @@ export class MeetingsService {
       },
       data: {
         ...updateMeetingDto,
-        start_date: new Date(updateMeetingDto.start_date),
-        end_date: new Date(updateMeetingDto.end_date),
+        ...(updateMeetingDto.start_date && {
+          start_date: new Date(updateMeetingDto.start_date),
+        }),
+        ...(updateMeetingDto.end_date && {
+          end_date: new Date(updateMeetingDto.end_date),
+        }),
         attendees: {
-          connectOrCreate: updateMeetingDto.attendees.map((email) => ({
+          connectOrCreate: updateMeetingDto.attendees?.map((email) => ({
             where: {
               email,
             },
