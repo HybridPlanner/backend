@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Meeting } from '@prisma/client';
 import * as ics from 'ics';
 import { DatabaseService } from 'src/services/database/database.service';
@@ -6,7 +7,6 @@ export async function createIcsFile(
   meeting: Meeting,
   prisma: DatabaseService,
 ): Promise<string> {
-
   const meetingWithAttendees = await prisma.meeting.findUnique({
     where: { id: meeting.id },
     include: { attendees: true },
@@ -29,18 +29,17 @@ export async function createIcsFile(
     ],
     title: meeting.title,
     description: meeting.description,
-    location: "Rainbow application - Remote",
+    location: 'Rainbow application - Remote',
     attendees: meetingWithAttendees.attendees.map((attendee) => ({
       email: attendee.email,
       rsvp: true,
       partstat: 'NEEDS-ACTION',
     })),
-    url: `https://example.com/meetings/${meeting.id}`, 
+    url: `https://example.com/meetings/${meeting.id}`,
   });
 
   if (error) {
-    console.log('Error creating ics file');
-    console.log(error);
+    Logger.error(`Error creating ics file: ${error}`);
     return;
   }
 
