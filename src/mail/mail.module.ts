@@ -3,12 +3,13 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { join } from 'path';
+import { DatabaseService } from 'src/services/database/database.service';
 
 @Module({
   imports: [
     MailerModule.forRoot({
       transport: {
-        host: 'mailhog',
+        host: 'localhost',
         port: 1025,
         secure: false,
         debug: true,
@@ -26,7 +27,7 @@ import { join } from 'path';
       },
     }),
   ],
-  providers: [MailService],
+  providers: [MailService, DatabaseService],
   exports: [MailService],
 })
 export class MailModule {}

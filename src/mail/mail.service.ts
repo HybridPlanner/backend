@@ -1,10 +1,12 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-
+import { Meeting } from '@prisma/client';
+import { DatabaseService } from 'src/services/database/database.service';
+import { createIcsFile } from 'src/utils/ics-util';
 @Injectable()
 export class MailService {
-  public constructor(private mailerService: MailerService) {}
+  public constructor(private mailerService: MailerService, private database: DatabaseService) {}
 
   @OnEvent('user.create')
   public async sendUserConfirmation(to: string): Promise<void> {
@@ -28,5 +30,41 @@ export class MailService {
       .catch(() => {
         Logger.error(`Confirmation email failed`);
       });
+  }
+
+  @OnEvent('meeting.create')
+  public async sendMeetingInvitation(
+    meeting: Meeting,
+  ): Promise<void> {
+
+    const meetingWithAttendees = await this.database.meeting.findUnique({
+      where: { id: meeting.id },
+      include: { attendees: true },
+    });
+
+    const icsFile = await createIcsFile(meeting, this.database);
+    const url = `example.com/meetings/${meeting.id}`;
+    const fileName = `meeting-${meeting.title.replace(/[^a-zA-Z0-9]/g, '')}.ics`;
+
+    await Promise.all(
+      meetingWithAttendees.attendees.map((attendee) =>
+        this.mailerService.sendMail({
+          to: attendee.email,
+          subject: 'You are invited to a meeting',
+          template: 'meeting-invitation', // You will need to create this template
+          context: {
+            meeting,
+            url,
+          },
+          attachments: [
+            {
+              filename: fileName,
+              content: Buffer.from(icsFile, 'utf-8'),
+              contentType: 'text/calendar',
+            },
+          ],
+        }),
+      ),
+    );
   }
 }
