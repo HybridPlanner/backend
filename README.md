@@ -98,6 +98,12 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Mailhog
+
+- Make sure to run the mailhog container
+- Upate the values in the .env file `MAILHOG_HOST` either localhost or mailhog depending on the environment you are running (docker or local)
+- To use mailhog locally, go to http://localhost:8025/
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
