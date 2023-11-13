@@ -2,13 +2,14 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Meeting } from '@prisma/client';
+import { IcsService } from 'src/ics/ics.service';
 import { DatabaseService } from 'src/services/database/database.service';
-import { createIcsFile } from 'src/utils/ics-util';
 @Injectable()
 export class MailService {
   public constructor(
     private mailerService: MailerService,
     private database: DatabaseService,
+    private icsService: IcsService,
   ) {}
 
   @OnEvent('user.create')
@@ -42,7 +43,7 @@ export class MailService {
       include: { attendees: true },
     });
 
-    const icsFile = await createIcsFile(meeting, this.database);
+    const icsFile = await this.icsService.createIcsFile(meeting, this.database);
     const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
     const fileName = `meeting-${meeting.title.replace(
       /[^a-zA-Z0-9]/g,

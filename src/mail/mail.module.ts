@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { join } from 'path';
 import { DatabaseService } from 'src/services/database/database.service';
+import { IcsService } from 'src/ics/ics.service';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { DatabaseService } from 'src/services/database/database.service';
       },
     }),
   ],
-  providers: [MailService, DatabaseService],
+  providers: [MailService, DatabaseService, IcsService],
   exports: [MailService],
 })
 export class MailModule {}
