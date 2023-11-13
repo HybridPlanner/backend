@@ -3,7 +3,6 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { join } from 'path';
-import { DatabaseService } from 'src/services/database/database.service';
 import { IcsService } from 'src/ics/ics.service';
 
 @Module({
@@ -28,7 +27,7 @@ import { IcsService } from 'src/ics/ics.service';
       },
     }),
   ],
-  providers: [MailService, DatabaseService, IcsService],
+  providers: [MailService, IcsService],
   exports: [MailService],
 })
 export class MailModule {}

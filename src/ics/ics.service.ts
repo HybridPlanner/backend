@@ -1,22 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Meeting } from '@prisma/client';
-import { DatabaseService } from 'src/services/database/database.service';
 import { Logger } from '@nestjs/common';
 import * as ics from 'ics';
+import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 
 @Injectable()
 export class IcsService {
   private readonly logger = new Logger(IcsService.name);
 
-  public async createIcsFile(
-    meeting: Meeting,
-    prisma: DatabaseService,
-  ): Promise<string> {
-    const meetingWithAttendees = await prisma.meeting.findUnique({
-      where: { id: meeting.id },
-      include: { attendees: true },
-    });
-
+  public async createIcsFile(meeting: MeetingWithAttendees): Promise<string> {
     const { error, value } = ics.createEvent({
       start: [
         meeting.start_date.getFullYear(),
@@ -35,7 +26,7 @@ export class IcsService {
       title: meeting.title,
       description: meeting.description,
       location: 'Rainbow application - Remote',
-      attendees: meetingWithAttendees.attendees.map((attendee) => ({
+      attendees: meeting.attendees.map((attendee) => ({
         email: attendee.email,
         rsvp: true,
         partstat: 'NEEDS-ACTION',

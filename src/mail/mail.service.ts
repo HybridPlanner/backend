@@ -1,14 +1,12 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { Meeting } from '@prisma/client';
 import { IcsService } from 'src/ics/ics.service';
-import { DatabaseService } from 'src/services/database/database.service';
+import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 @Injectable()
 export class MailService {
   public constructor(
     private mailerService: MailerService,
-    private database: DatabaseService,
     private icsService: IcsService,
   ) {}
 
@@ -37,13 +35,10 @@ export class MailService {
   }
 
   @OnEvent('meeting.create')
-  public async sendMeetingInvitation(meeting: Meeting): Promise<void> {
-    const meetingWithAttendees = await this.database.meeting.findUnique({
-      where: { id: meeting.id },
-      include: { attendees: true },
-    });
-
-    const icsFile = await this.icsService.createIcsFile(meeting, this.database);
+  public async sendMeetingInvitation(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const icsFile = await this.icsService.createIcsFile(meeting);
     const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
     const fileName = `meeting-${meeting.title.replace(
       /[^a-zA-Z0-9]/g,
@@ -51,7 +46,7 @@ export class MailService {
     )}.ics`; // remove special characters from title
 
     this.mailerService.sendMail({
-      bcc: meetingWithAttendees.attendees.map((attendee) => attendee.email),
+      bcc: meeting.attendees.map((attendee) => attendee.email),
       subject: 'You are invited to a meeting',
       template: 'meetings/invitation',
       context: {
