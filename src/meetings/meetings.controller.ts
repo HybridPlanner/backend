@@ -15,6 +15,7 @@ import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { Attendee, Meeting } from '@prisma/client';
 import { isAfter, isValid } from 'date-fns';
+import { MeetingWithAttendees } from './meetings.type';
 
 @Controller('meetings')
 export class MeetingsController {
@@ -60,8 +61,8 @@ export class MeetingsController {
   }
 
   @Get(':id')
-  public findOne(@Param('id') id: string): Promise<Meeting> {
-    return this.meetingsService.findOne(+id);
+  public findOne(@Param('id') id: string): Promise<MeetingWithAttendees> {
+    return this.meetingsService.findOneWithAttendees(+id);
   }
 
   @Patch(':id')
