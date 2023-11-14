@@ -4,6 +4,7 @@ import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { DatabaseService } from 'src/services/database/database.service';
 import { Attendee, Meeting } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MeetingWithAttendees } from './meetings.type';
 
 @Injectable()
 export class MeetingsService {
@@ -30,7 +31,8 @@ export class MeetingsService {
         },
       },
     });
-    this.eventEmitter.emit('meeting.create', meeting);
+    const meetingWithAttendees = await this.findOneWithAttendees(meeting.id);
+    this.eventEmitter.emit('meeting.create', meetingWithAttendees);
     return meeting;
   }
 
@@ -70,6 +72,17 @@ export class MeetingsService {
     return this.database.meeting.findUniqueOrThrow({
       where: {
         id,
+      },
+    });
+  }
+
+  public findOneWithAttendees(id: number): Promise<MeetingWithAttendees> {
+    return this.database.meeting.findUniqueOrThrow({
+      where: {
+        id,
+      },
+      include: {
+        attendees: true,
       },
     });
   }
