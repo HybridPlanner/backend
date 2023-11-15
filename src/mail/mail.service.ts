@@ -1,7 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { isAfter, isBefore } from 'date-fns';
+import { isBefore } from 'date-fns';
 import { IcsService } from 'src/ics/ics.service';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 @Injectable()
