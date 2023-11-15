@@ -1,7 +1,7 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { DatabaseService } from './services/database/database.service';
+import { DatabaseService } from './services/database.service';
 import { MeetingsModule } from './meetings/meetings.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';

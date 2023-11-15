@@ -1,7 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { IcsService } from 'src/ics/ics.service';
+import { IcsService } from 'src/services/ics.service';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 @Injectable()
 export class MailService {
@@ -72,7 +72,7 @@ export class MailService {
 
     this.mailerService.sendMail({
       bcc: attendeesMails,
-      subject: "Don't forget your meeting !",
+      subject: "Don't forget your meeting ! ",
       template: 'meetings/reminder',
       context: {
         meeting,
