@@ -3,7 +3,7 @@ import { RainbowService } from './rainbow.service';
 import { ConfigService } from '@nestjs/config';
 import { EnvConfig } from '../config';
 import { MeetingsService } from 'src/meetings/meetings.service';
-import { DatabaseService } from 'src/services/database/database.service';
+import { DatabaseService } from 'src/services/database.service';
 
 @Module({
   imports: [],
