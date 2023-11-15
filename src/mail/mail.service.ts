@@ -1,7 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { isAfter } from 'date-fns';
+import { isAfter, isBefore } from 'date-fns';
 import { IcsService } from 'src/ics/ics.service';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 @Injectable()
@@ -88,7 +88,7 @@ export class MailService {
   ): Promise<void> {
     const now = new Date();
 
-    if (isAfter(meeting.end_date, now)) return;
+    if (isBefore(meeting.end_date, now)) return;
 
     const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
 
