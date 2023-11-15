@@ -62,4 +62,10 @@ export class MailService {
       ],
     });
   }
+
+  @OnEvent('meeting.beforeStarte')
+  public async sendMailBeforeMeeting() // meeting: MeetingWithAttendees,
+  : Promise<void> {
+    // TODO : send mail
+  }
 }

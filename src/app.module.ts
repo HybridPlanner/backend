@@ -10,8 +10,9 @@ import { MailService } from './mail/mail.service';
 //import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerService } from './services/scheduler.service';
-import { RainbowService } from './services/rainbow/rainbow.service';
+import { RainbowService } from './rainbow/rainbow.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { RainbowModule } from './rainbow/rainbow.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     UsersModule,
     MailModule,
     ScheduleModule.forRoot(),
+    RainbowModule,
   ],
   controllers: [AppController],
   providers: [
