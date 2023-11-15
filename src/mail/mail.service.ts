@@ -62,4 +62,22 @@ export class MailService {
       ],
     });
   }
+
+  @OnEvent('meeting.beforeStart')
+  public async sendMailBeforeMeeting(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+    const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
+
+    this.mailerService.sendMail({
+      bcc: attendeesMails,
+      subject: "Don't forget your meeting !",
+      template: 'meetings/reminder',
+      context: {
+        meeting,
+        url,
+      },
+    });
+  }
 }

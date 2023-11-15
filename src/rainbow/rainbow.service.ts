@@ -3,14 +3,21 @@ import { ConfigService } from '@nestjs/config';
 import * as RainbowSDK from 'rainbow-node-sdk';
 import { type BubblesService } from 'rainbow-node-sdk/lib/services/BubblesService';
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
-import { EnvConfig } from '../../config';
+import { EnvConfig } from '../config';
 import { Contact } from 'rainbow-node-sdk/lib/common/models/Contact';
+import { MeetingWithAttendees } from 'src/meetings/meetings.type';
+import { MeetingsService } from 'src/meetings/meetings.service';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class RainbowService implements OnApplicationShutdown {
+  private readonly logger = new Logger(RainbowService.name);
   private rainbowSDK: RainbowSDK;
 
-  public constructor(private config: ConfigService<EnvConfig>) {
+  public constructor(
+    private meetingService: MeetingsService,
+    private config: ConfigService<EnvConfig>,
+  ) {
     this.rainbowSDK = new RainbowSDK({
       rainbow: {
         host: this.config.get<string>('RAINBOW_HOST'),
@@ -145,5 +152,17 @@ export class RainbowService implements OnApplicationShutdown {
     ).stopConferenceOrWebinar(bubble.id);
 
     return conference;
+  }
+
+  @OnEvent('meeting.beforeStart')
+  public async createBubbleBeforeMeeting(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const bubble = await this.createBubble(meeting.title, meeting.description);
+    await this.meetingService.update(meeting.id, {
+      bubbleId: bubble.id,
+    });
+
+    this.logger.log(`Bubble ${bubble.id} created for meeting ${meeting.id}`);
   }
 }

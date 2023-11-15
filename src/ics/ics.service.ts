@@ -35,7 +35,7 @@ export class IcsService {
     });
 
     if (error) {
-      this.logger.error(`Error creating ics file: ${error}`);
+      this.logger.error(`Error creating ics file: ${error.message}`);
       return;
     }
 

@@ -1,38 +1,25 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MailService } from 'src/mail/mail.service';
+import { Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { OnEvent } from '@nestjs/event-emitter';
-import { Meeting } from '@prisma/client';
-import { RainbowService } from './rainbow/rainbow.service';
-import { MeetingsService } from 'src/meetings/meetings.service';
+import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
+import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 
 @Injectable()
 export class SchedulerService {
-  private readonly logger = new Logger(SchedulerService.name);
-
   public constructor(
-    private mailService: MailService,
-    private meetingService: MeetingsService,
-    private rainbowService: RainbowService,
+    private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
   ) {}
 
   @OnEvent('meeting.create')
-  public async scheduleBubbleCreation(meeting: Meeting): Promise<void> {
+  public async scheduleBubbleCreation(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
     const bubbleCreationDate = new Date(meeting.start_date);
     bubbleCreationDate.setMinutes(bubbleCreationDate.getMinutes() - 15);
 
     const job = new CronJob(bubbleCreationDate, async () => {
-      const bubble = await this.rainbowService.createBubble(
-        meeting.title,
-        meeting.description,
-      );
-      await this.meetingService.update(meeting.id, {
-        bubbleId: bubble.id,
-      });
-
-      this.logger.log(`Bubble ${bubble.id} created for meeting ${meeting.id}`);
+      this.eventEmitter.emit('meeting.beforeStart', meeting);
     });
     job.start();
 
