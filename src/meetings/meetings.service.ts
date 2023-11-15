@@ -121,9 +121,12 @@ export class MeetingsService {
   }
 
   public async delete(id: number): Promise<Meeting> {
-    const meeting: Meeting = await this.database.meeting.delete({
+    const meeting: MeetingWithAttendees = await this.database.meeting.delete({
       where: {
         id,
+      },
+      include: {
+        attendees: true,
       },
     });
     this.eventEmitter.emit('meeting.delete', meeting);

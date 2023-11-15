@@ -1,6 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { isAfter } from 'date-fns';
 import { IcsService } from 'src/ics/ics.service';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 @Injectable()
@@ -77,6 +78,26 @@ export class MailService {
       context: {
         meeting,
         url,
+      },
+    });
+  }
+
+  @OnEvent('meeting.delete')
+  public async sendMailMeetingCancelled(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const now = new Date();
+
+    if (isAfter(meeting.end_date, now)) return;
+
+    const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+
+    this.mailerService.sendMail({
+      bcc: attendeesMails,
+      subject: 'Your meeting has been cancelled',
+      template: 'meetings/cancellation',
+      context: {
+        meeting,
       },
     });
   }
