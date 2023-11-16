@@ -179,8 +179,8 @@ export class MeetingsService {
 
     this._meetings.next({
       type: 'started',
-      id: meeting.id,
-      url: meeting.publicUrl,
+      id: meetingData.id,
+      url: meetingData.publicUrl,
     });
   }
 
