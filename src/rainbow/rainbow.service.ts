@@ -84,13 +84,10 @@ export class RainbowService implements OnApplicationShutdown {
     await this.rainbowSDK.stop();
   }
 
-  public async createBubble(
-    name: string,
-    description: string,
-  ): Promise<Bubble> {
+  public async createBubble(name: string): Promise<Bubble> {
     const bubble = (await (
       this.rainbowSDK.bubbles as BubblesService
-    ).createBubble(name, description, false)) as Bubble;
+    ).createBubble(name, 'Generated with Hybrid Planner', false)) as Bubble;
 
     return bubble;
   }

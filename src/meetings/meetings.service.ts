@@ -189,10 +189,9 @@ export class MeetingsService {
     meeting: MeetingWithAttendees,
   ): Promise<void> {
     this.logger.debug(`Creating bubble for meeting "${meeting.id}"`);
-    const bubble = await this.rainbow.createBubble(
-      meeting.title,
-      meeting.description,
-    );
+    const bubble = await this.rainbow.createBubble(meeting.title);
+
+    this.logger.debug(`Fetching bubble public URL for meeting "${meeting.id}"`);
     const publicUrl = await this.rainbow.getBubblePublicUrl(bubble);
     await this.update(meeting.id, {
       bubbleId: bubble.id,
