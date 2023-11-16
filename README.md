@@ -29,10 +29,6 @@
 ## Docker usage
 
 ```bash
-# Create the hybridplanner network
-# This allows the frontend and backend to communicate with each other
-$ docker network create hybridplanner
-
 # Define the environment variables 
 $ cp .env.example .env
 
