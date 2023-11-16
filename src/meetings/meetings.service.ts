@@ -17,8 +17,6 @@ export class MeetingsService {
     const meeting: Meeting = await this.database.meeting.create({
       data: {
         ...createMeetingDto,
-        start_date: createMeetingDto.start_date,
-        end_date: createMeetingDto.end_date,
         attendees: {
           connectOrCreate: createMeetingDto.attendees.map((email) => ({
             where: {
