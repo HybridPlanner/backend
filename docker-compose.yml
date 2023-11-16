@@ -24,3 +24,5 @@ services:
 
 networks:
   hybridplanner:
+    driver: bridge
+    name: hybridplanner
