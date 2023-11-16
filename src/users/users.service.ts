@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { DatabaseService } from 'src/services/database/database.service';
+import { DatabaseService } from 'src/database/database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
