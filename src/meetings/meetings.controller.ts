@@ -9,13 +9,16 @@ import {
   BadRequestException,
   Query,
   Logger,
+  Sse,
+  NotFoundException,
 } from '@nestjs/common';
-import { MeetingsService } from './meetings.service';
+import { MeetingEvent, MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { Attendee, Meeting } from '@prisma/client';
 import { isAfter, isValid } from 'date-fns';
 import { MeetingWithAttendees } from './meetings.type';
+import { Observable, filter } from 'rxjs';
 
 @Controller('meetings')
 export class MeetingsController {
@@ -61,8 +64,15 @@ export class MeetingsController {
   }
 
   @Get(':id')
-  public findOne(@Param('id') id: string): Promise<MeetingWithAttendees> {
-    return this.meetingsService.findOneWithAttendees(+id);
+  public async findOne(@Param('id') id: string): Promise<MeetingWithAttendees> {
+    const meeting = await this.meetingsService.findOneWithAttendees(+id);
+
+    console.log(meeting);
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
+    }
+
+    return meeting;
   }
 
   @Patch(':id')
@@ -76,5 +86,12 @@ export class MeetingsController {
   @Delete(':id')
   public delete(@Param('id') id: string): Promise<Meeting> {
     return this.meetingsService.delete(+id);
+  }
+
+  @Sse('/sse/:id')
+  public sse(@Param('id') id: string): Observable<MeetingEvent> {
+    return this.meetingsService.meetings.pipe(
+      filter((event) => event.id === +id),
+    );
   }
 }

@@ -20,6 +20,8 @@ model Meeting {
   updatedAt   DateTime   @updatedAt
   attendees   Attendee[]
   bubbleId    String?
+  started    Boolean    @default(false)
+  publicUrl String?
 }
 
 model User {
