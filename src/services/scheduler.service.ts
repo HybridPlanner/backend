@@ -3,7 +3,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
-import { isAfter, subMinutes } from 'date-fns';
+import { isBefore, subMinutes } from 'date-fns';
 
 @Injectable()
 export class SchedulerService {
@@ -23,10 +23,10 @@ export class SchedulerService {
     // schedule bubble creation 15 minutes before meeting start
     // if meeting is created less than 15 minutes before start, schedule it now
     const bubbleStartDate = new Date(meeting.start_date);
-    const bubbleCreationDate = subMinutes(bubbleStartDate, -15);
+    const bubbleCreationDate = subMinutes(bubbleStartDate, 15);
 
     // Are we after the bubble creation date?
-    if (isAfter(bubbleCreationDate, new Date())) {
+    if (isBefore(bubbleCreationDate, new Date())) {
       this.logger.debug(
         "Creating bubble now because it's less than 15 minutes before meeting start",
       );

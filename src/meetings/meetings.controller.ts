@@ -95,27 +95,7 @@ export class MeetingsController {
   public sse(@Param('id', ParseIntPipe) id: number): Observable<MessageEvent> {
     return this.meetingsService.meetings.pipe(
       filter((event) => event.id === +id),
-      map((event) => {
-        let data: string | object;
-
-        switch (event.type) {
-          case 'bubbleCreated':
-            data = event.meeting;
-            break;
-          case 'started':
-            data = event.url;
-            break;
-          case 'updated':
-            data = event.meeting;
-            break;
-          default:
-        }
-
-        return {
-          type: event.type,
-          data,
-        } satisfies MessageEvent;
-      }),
+      map((event) => ({ data: event })),
     );
   }
 }
