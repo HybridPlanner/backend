@@ -17,8 +17,6 @@ export class MeetingsService {
     const meeting: Meeting = await this.database.meeting.create({
       data: {
         ...createMeetingDto,
-        start_date: new Date(createMeetingDto.start_date),
-        end_date: new Date(createMeetingDto.end_date),
         attendees: {
           connectOrCreate: createMeetingDto.attendees.map((email) => ({
             where: {
@@ -121,9 +119,12 @@ export class MeetingsService {
   }
 
   public async delete(id: number): Promise<Meeting> {
-    const meeting: Meeting = await this.database.meeting.delete({
+    const meeting: MeetingWithAttendees = await this.database.meeting.delete({
       where: {
         id,
+      },
+      include: {
+        attendees: true,
       },
     });
     this.eventEmitter.emit('meeting.delete', meeting);
