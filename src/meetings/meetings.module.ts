@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MeetingsService } from './meetings.service';
 import { MeetingsController } from './meetings.controller';
-import { DatabaseService } from 'src/services/database/database.service';
+import { DatabaseService } from 'src/database/database.service';
 import { RainbowModule } from 'src/rainbow/rainbow.module';
 
 @Module({

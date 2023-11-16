@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
-import { DatabaseService } from 'src/services/database/database.service';
+import { DatabaseService } from 'src/database/database.service';
 import { Attendee, Meeting } from '@prisma/client';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from './meetings.type';

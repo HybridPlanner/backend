@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { RainbowService } from './rainbow.service';
 import { ConfigService } from '@nestjs/config';
 import { EnvConfig } from '../config';
-import { DatabaseService } from 'src/services/database/database.service';
+import { DatabaseService } from 'src/database/database.service';
 
 @Module({
   imports: [],
