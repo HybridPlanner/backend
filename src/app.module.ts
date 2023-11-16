@@ -1,7 +1,7 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { DatabaseService } from './services/database/database.service';
+import { DatabaseService } from './database/database.service';
 import { MeetingsModule } from './meetings/meetings.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
@@ -9,7 +9,7 @@ import { MailService } from './mail/mail.service';
 //import { AuthGuard } from './auth/auth.guard';
 //import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
-import { SchedulerService } from './services/scheduler.service';
+import { SchedulerService } from './scheduler/scheduler.service';
 import { RainbowService } from './rainbow/rainbow.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RainbowModule } from './rainbow/rainbow.module';
