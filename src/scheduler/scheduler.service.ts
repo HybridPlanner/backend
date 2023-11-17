@@ -7,7 +7,7 @@ import { addDays, isBefore, subMinutes } from 'date-fns';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 
 const MINUTES_BEFORE_MEETING_START = 15;
-const DAY_AFTER_MEETING_DELETION = 1;
+const DAY_BEFORE_MEETING_CLEANING = 1;
 
 @Injectable()
 export class SchedulerService {
@@ -64,28 +64,28 @@ export class SchedulerService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_START)
-  public async scheduleBubbleDeletion(
+  public async scheduleBubbleCleaning(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
-    this.logger.debug(`Scheduling bubble deletion for meeting ${meeting.id}`);
+    this.logger.debug(`Scheduling bubble cleaning for meeting ${meeting.id}`);
 
     const bubbleStartDate = new Date(meeting.start_date);
-    const bubbleDeletionDate = addDays(
+    const bubbleCleaningDate = addDays(
       bubbleStartDate,
-      DAY_AFTER_MEETING_DELETION,
+      DAY_BEFORE_MEETING_CLEANING,
     );
 
-    if (isBefore(bubbleDeletionDate, new Date())) {
+    if (isBefore(bubbleCleaningDate, new Date())) {
       this.eventEmitter.emit(ApplicationEvent.MEETING_CLEANING, meeting);
     } else {
-      const deletionJob = new CronJob(bubbleDeletionDate, async () => {
+      const cleaningJob = new CronJob(bubbleCleaningDate, async () => {
         this.eventEmitter.emit(ApplicationEvent.MEETING_CLEANING, meeting);
       });
-      deletionJob.start();
+      cleaningJob.start();
 
       this.schedulerRegistry.addCronJob(
-        `meeting-${meeting.id}-bubble-deletion`,
-        deletionJob,
+        `meeting-${meeting.id}-bubble-cleaning`,
+        cleaningJob,
       );
     }
   }
@@ -93,5 +93,7 @@ export class SchedulerService {
   /**
    * This method is called when the application starts. It is used to restore the scheduled jobs from the database.
    */
-  private coldBootSchedulingInit(): void {}
+  private coldBootSchedulingInit(): void {
+    this.logger.debug('Initializing scheduled jobs from database');
+  }
 }

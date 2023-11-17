@@ -225,8 +225,7 @@ export class MeetingsService {
   public async deleteBubbleAfterMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
-    await this.rainbow.deleteBubble(
-      this.rainbow.getBubbleByID(meeting.bubbleId),
-    );
+    const bubble = await this.rainbow.getBubbleByID(meeting.bubbleId);
+    await this.rainbow.deleteBubble(bubble);
   }
 }
