@@ -92,6 +92,19 @@ export class RainbowService implements OnApplicationShutdown {
     return bubble;
   }
 
+  public async updateBubble(bubbleId: string, name: string): Promise<Bubble> {
+    const bubble = (await (
+      this.rainbowSDK.bubbles as BubblesService
+    ).updateBubbleData(
+      bubbleId,
+      undefined,
+      'Generated with Hybrid Planner',
+      name,
+    )) as Bubble;
+
+    return bubble;
+  }
+
   public getBubbleByName(name: string): Bubble {
     const bubbles = (
       this.rainbowSDK.bubbles as BubblesService

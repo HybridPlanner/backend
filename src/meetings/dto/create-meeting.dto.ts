@@ -1,3 +1,5 @@
+import { MeetingStatus } from '../meetings.type';
+
 export class CreateMeetingDto {
   public title: string;
   public description?: string;
@@ -6,4 +8,5 @@ export class CreateMeetingDto {
   public attendees: string[];
   public bubbleId?: string;
   public publicUrl?: string;
+  public status?: MeetingStatus;
 }
