@@ -5,7 +5,6 @@ import { type BubblesService } from 'rainbow-node-sdk/lib/services/BubblesServic
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 import { EnvConfig } from '../config';
 import { Contact } from 'rainbow-node-sdk/lib/common/models/Contact';
-import { Observable, Subject } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 

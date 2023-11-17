@@ -3,7 +3,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
-import { addDays, addMinutes, isBefore, subMinutes } from 'date-fns';
+import { addMinutes, isBefore, subMinutes } from 'date-fns';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 
