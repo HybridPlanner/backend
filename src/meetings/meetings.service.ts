@@ -4,7 +4,7 @@ import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { Attendee, Meeting } from '@prisma/client';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { MeetingWithAttendees } from './meetings.type';
+import { MeetingStatus, MeetingWithAttendees } from './meetings.type';
 import { RainbowService } from 'src/rainbow/rainbow.service';
 import { Observable, Subject } from 'rxjs';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
@@ -60,23 +60,32 @@ export class MeetingsService {
   ): Promise<MeetingWithAttendees[]> {
     return this.database.meeting.findMany({
       where: {
-        start_date: {
+        end_date: {
           gte: new Date(),
         },
       },
       include: {
         attendees: withAttendees,
       },
+      orderBy: {
+        end_date: 'desc',
+      },
     });
   }
 
-  public findAllPrevious(previous: Date, limit?: number): Promise<Meeting[]> {
+  public findAllPrevious(
+    previous: Date,
+    limit: number = 5,
+  ): Promise<Meeting[]> {
     return this.database.meeting.findMany({
       take: limit,
       where: {
-        start_date: {
+        end_date: {
           lt: previous,
         },
+      },
+      orderBy: {
+        end_date: 'desc',
       },
     });
   }
@@ -108,6 +117,14 @@ export class MeetingsService {
       },
       include: {
         attendees: true,
+      },
+    });
+  }
+
+  public findMeetingByBubbleId(bubbleId: string): Promise<Meeting | null> {
+    return this.database.meeting.findFirst({
+      where: {
+        bubbleId,
       },
     });
   }
@@ -183,7 +200,7 @@ export class MeetingsService {
     // Update the meeting status
     await this.database.meeting.update({
       where: { id: meeting.id },
-      data: { started: true },
+      data: { started: true, status: MeetingStatus.STARTED },
     });
 
     this._meetings.next({
@@ -205,6 +222,7 @@ export class MeetingsService {
     await this.update(meeting.id, {
       bubbleId: bubble.id,
       publicUrl,
+      status: MeetingStatus.SCHEDULED,
     });
 
     this._meetings.next({
@@ -218,5 +236,19 @@ export class MeetingsService {
     });
 
     this.logger.log(`Bubble ${bubble.id} created for meeting ${meeting.id}`);
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  public async deleteBubble(meeting: MeetingWithAttendees): Promise<void> {
+    this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
+    const bubble = this.rainbow.getBubbleByID(meeting.bubbleId);
+    await this.rainbow.deleteBubble(bubble);
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_UPDATE)
+  public async updateBubble(meeting: MeetingWithAttendees): Promise<void> {
+    this.logger.debug(`Updating bubble for meeting "${meeting.id}"`);
+    const bubble = this.rainbow.getBubbleByID(meeting.bubbleId);
+    await this.rainbow.updateBubble(bubble.id, meeting.title);
   }
 }

@@ -5,4 +5,5 @@ export enum ApplicationEvent {
 
   MEETING_START = 'meeting.start',
   MEETING_BEFORE_START = 'meeting.beforeStart',
+  MEETING_END = 'meeting.end',
 }

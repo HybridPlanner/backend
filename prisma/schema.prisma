@@ -21,6 +21,7 @@ model Meeting {
   attendees   Attendee[]
   bubbleId    String?
   started    Boolean    @default(false)
+  status      String     @default("scheduled") // "scheduled", "started", "ended"
   publicUrl String?
 }
 
