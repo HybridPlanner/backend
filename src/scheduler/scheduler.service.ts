@@ -5,6 +5,7 @@ import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 import { isBefore, subMinutes } from 'date-fns';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { MeetingsService } from 'src/meetings/meetings.service';
 
 const TIME_BEFORE_MEETING_START = 15; // IN minutes
 
@@ -14,6 +15,7 @@ export class SchedulerService {
   public constructor(
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
+    private meetingsService: MeetingsService,
   ) {
     this.coldBootSchedulingInit();
   }
@@ -23,34 +25,38 @@ export class SchedulerService {
     meeting: MeetingWithAttendees,
   ): Promise<void> {
     this.logger.debug(`Scheduling bubble creation for meeting ${meeting.id}`);
-    // schedule bubble creation 15 minutes before meeting start
-    // if meeting is created less than 15 minutes before start, schedule it now
     const bubbleStartDate = new Date(meeting.start_date);
     const bubbleCreationDate = subMinutes(
       bubbleStartDate,
       TIME_BEFORE_MEETING_START,
     );
 
-    // Are we after the bubble creation date?
     if (isBefore(bubbleCreationDate, new Date())) {
       this.logger.debug(
         "Creating bubble now because it's less than 15 minutes before meeting start",
       );
       this.eventEmitter.emit(ApplicationEvent.MEETING_BEFORE_START, meeting);
-    } else {
-      this.logger.debug('Scheduling bubble creation');
-      const creationJob = new CronJob(bubbleCreationDate, async () => {
-        this.eventEmitter.emit(ApplicationEvent.MEETING_BEFORE_START, meeting);
-      });
-      creationJob.start();
-
-      this.schedulerRegistry.addCronJob(
-        `meeting-${meeting.id}-bubble-creation`,
-        creationJob,
-      );
+      return;
     }
 
-    // schedule bubble call start at meeting start
+    // Schedule bubble creation 15 minutes before meeting start
+    this.logger.debug('Scheduling bubble creation');
+    const creationJob = new CronJob(bubbleCreationDate, async () => {
+      this.eventEmitter.emit(ApplicationEvent.MEETING_BEFORE_START, meeting);
+    });
+    creationJob.start();
+
+    this.schedulerRegistry.addCronJob(
+      `meeting-${meeting.id}-bubble-creation`,
+      creationJob,
+    );
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_CREATE)
+  public async scheduleBubbleStart(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const bubbleStartDate = new Date(meeting.start_date);
     const startJob = new CronJob(bubbleStartDate, async () => {
       this.eventEmitter.emit(ApplicationEvent.MEETING_START, meeting);
     });
@@ -65,5 +71,11 @@ export class SchedulerService {
   /**
    * This method is called when the application starts. It is used to restore the scheduled jobs from the database.
    */
-  private coldBootSchedulingInit(): void {}
+  private async coldBootSchedulingInit(): Promise<void> {
+    const meetings = await this.meetingsService.findAll(true);
+    meetings.forEach(async (meeting) => {
+      this.scheduleBubbleCreation(meeting);
+      this.scheduleBubbleStart(meeting);
+    });
+  }
 }

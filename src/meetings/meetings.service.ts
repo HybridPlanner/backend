@@ -30,8 +30,10 @@ export class MeetingsService {
     private rainbow: RainbowService,
   ) {}
 
-  public async create(createMeetingDto: CreateMeetingDto): Promise<Meeting> {
-    const meeting: Meeting = await this.database.meeting.create({
+  public async create(
+    createMeetingDto: CreateMeetingDto,
+  ): Promise<MeetingWithAttendees> {
+    const meeting: MeetingWithAttendees = await this.database.meeting.create({
       data: {
         ...createMeetingDto,
         attendees: {
@@ -45,22 +47,25 @@ export class MeetingsService {
           })),
         },
       },
+      include: {
+        attendees: true,
+      },
     });
-    const meetingWithAttendees = await this.findOneWithAttendees(meeting.id);
-    this.eventEmitter.emit(
-      ApplicationEvent.MEETING_CREATE,
-      meetingWithAttendees,
-    );
+    this.eventEmitter.emit(ApplicationEvent.MEETING_CREATE, meeting);
     return meeting;
   }
 
-  public findAll(limit?: number): Promise<Meeting[]> {
+  public findAll(
+    withAttendees: boolean = false,
+  ): Promise<MeetingWithAttendees[]> {
     return this.database.meeting.findMany({
-      take: limit,
       where: {
         end_date: {
           gte: new Date(),
         },
+      },
+      include: {
+        attendees: withAttendees,
       },
       orderBy: {
         end_date: 'desc',
