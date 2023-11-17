@@ -7,6 +7,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from './meetings.type';
 import { RainbowService } from 'src/rainbow/rainbow.service';
 import { Observable, Subject } from 'rxjs';
+import { ApplicationEvent } from 'src/types/MeetingEvents';
 
 export type MeetingEvent =
   | { type: 'bubbleCreated'; id: number; meeting: MeetingWithAttendees }
@@ -46,7 +47,10 @@ export class MeetingsService {
       },
     });
     const meetingWithAttendees = await this.findOneWithAttendees(meeting.id);
-    this.eventEmitter.emit('meeting.create', meetingWithAttendees);
+    this.eventEmitter.emit(
+      ApplicationEvent.MEETING_CREATE,
+      meetingWithAttendees,
+    );
     return meeting;
   }
 
@@ -137,7 +141,7 @@ export class MeetingsService {
       id: meeting.id,
       meeting: await this.findOneWithAttendees(meeting.id),
     });
-    this.eventEmitter.emit('meeting.update', meeting);
+    this.eventEmitter.emit(ApplicationEvent.MEETING_UPDATE, meeting);
     return meeting;
   }
 
@@ -154,11 +158,11 @@ export class MeetingsService {
       type: 'cancelled',
       id: meeting.id,
     });
-    this.eventEmitter.emit('meeting.delete', meeting);
+    this.eventEmitter.emit(ApplicationEvent.MEETING_DELETE, meeting);
     return meeting;
   }
 
-  @OnEvent('meeting.start')
+  @OnEvent(ApplicationEvent.MEETING_START)
   public async startMeeting(meeting: MeetingWithAttendees): Promise<void> {
     this.logger.debug(`Starting meeting "${meeting.id}"`);
 
@@ -184,7 +188,7 @@ export class MeetingsService {
     });
   }
 
-  @OnEvent('meeting.beforeStart')
+  @OnEvent(ApplicationEvent.MEETING_BEFORE_START)
   public async createBubbleBeforeMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
