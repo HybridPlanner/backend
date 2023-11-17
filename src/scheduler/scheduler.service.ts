@@ -3,11 +3,12 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
-import { addDays, isBefore, subMinutes } from 'date-fns';
+import { addDays, addMinutes, isBefore, subMinutes } from 'date-fns';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 
 const MINUTES_BEFORE_MEETING_START = 15;
-const DAY_BEFORE_MEETING_CLEANING = 1;
+const MINUTES_BEFORE_MEETING_CLEANING = 30;
 
 @Injectable()
 export class SchedulerService {
@@ -63,31 +64,29 @@ export class SchedulerService {
     );
   }
 
-  @OnEvent(ApplicationEvent.MEETING_START)
-  public async scheduleBubbleCleaning(
-    meeting: MeetingWithAttendees,
-  ): Promise<void> {
-    this.logger.debug(`Scheduling bubble cleaning for meeting ${meeting.id}`);
+  @OnEvent(ApplicationEvent.MEETING_END)
+  public async scheduleBubbleCleaning(bubble: Bubble): Promise<void> {
+    this.logger.debug(`Scheduling bubble cleaning for id ${bubble.id}`);
 
-    const bubbleStartDate = new Date(meeting.start_date);
-    const bubbleCleaningDate = addDays(
-      bubbleStartDate,
-      DAY_BEFORE_MEETING_CLEANING,
+    const bubbleCleaningDate = addMinutes(
+      new Date(),
+      MINUTES_BEFORE_MEETING_CLEANING,
     );
 
-    if (isBefore(bubbleCleaningDate, new Date())) {
-      this.eventEmitter.emit(ApplicationEvent.MEETING_CLEANING, meeting);
-    } else {
-      const cleaningJob = new CronJob(bubbleCleaningDate, async () => {
-        this.eventEmitter.emit(ApplicationEvent.MEETING_CLEANING, meeting);
-      });
-      cleaningJob.start();
+    const cleaningJob = new CronJob(bubbleCleaningDate, async () => {
+      this.eventEmitter.emit(ApplicationEvent.MEETING_CLEANING, bubble);
+    });
+    cleaningJob.start();
 
-      this.schedulerRegistry.addCronJob(
-        `meeting-${meeting.id}-bubble-cleaning`,
-        cleaningJob,
-      );
-    }
+    this.schedulerRegistry.addCronJob(
+      `bubble-${bubble.id}-cleaning`,
+      cleaningJob,
+    );
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_CANCEL_END)
+  public async cancelBubbleCleaning(bubble: Bubble): Promise<void> {
+    this.schedulerRegistry.deleteCronJob(`bubble-${bubble.id}-cleaning`);
   }
 
   /**

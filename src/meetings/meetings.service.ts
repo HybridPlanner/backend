@@ -8,6 +8,7 @@ import { MeetingWithAttendees } from './meetings.type';
 import { RainbowService } from 'src/rainbow/rainbow.service';
 import { Observable, Subject } from 'rxjs';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 
 export type MeetingEvent =
   | { type: 'bubbleCreated'; id: number; meeting: MeetingWithAttendees }
@@ -222,10 +223,13 @@ export class MeetingsService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_CLEANING)
-  public async deleteBubbleAfterMeeting(
-    meeting: MeetingWithAttendees,
-  ): Promise<void> {
-    const bubble = await this.rainbow.getBubbleByID(meeting.bubbleId);
+  public async deleteBubbleAfterMeeting(bubble: Bubble): Promise<void> {
+    const meeting = await this.database.meeting.findFirst({
+      where: {
+        bubbleId: bubble.id,
+      },
+    });
+    // this.update(meeting.id, {});
     await this.rainbow.deleteBubble(bubble);
   }
 }
