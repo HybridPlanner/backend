@@ -221,11 +221,12 @@ export class MeetingsService {
     this.logger.log(`Bubble ${bubble.id} created for meeting ${meeting.id}`);
   }
 
-  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  @OnEvent(ApplicationEvent.MEETING_CLEANING)
   public async deleteBubbleAfterMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
-    this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
-    await this.delete(meeting.id);
+    await this.rainbow.deleteBubble(
+      this.rainbow.getBubbleByID(meeting.bubbleId),
+    );
   }
 }

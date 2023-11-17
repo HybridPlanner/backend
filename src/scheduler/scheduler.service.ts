@@ -76,10 +76,10 @@ export class SchedulerService {
     );
 
     if (isBefore(bubbleDeletionDate, new Date())) {
-      this.eventEmitter.emit(ApplicationEvent.MEETING_DELETE, meeting);
+      this.eventEmitter.emit(ApplicationEvent.MEETING_CLEANING, meeting);
     } else {
       const deletionJob = new CronJob(bubbleDeletionDate, async () => {
-        this.eventEmitter.emit(ApplicationEvent.MEETING_DELETE, meeting);
+        this.eventEmitter.emit(ApplicationEvent.MEETING_CLEANING, meeting);
       });
       deletionJob.start();
 
