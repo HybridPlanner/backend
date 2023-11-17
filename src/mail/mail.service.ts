@@ -4,7 +4,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { isBefore } from 'date-fns';
 import { IcsService } from 'src/ics/ics.service';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
-import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { MeetingEvent } from 'src/types/MeetingEvents';
 @Injectable()
 export class MailService {
   public constructor(
@@ -36,7 +36,7 @@ export class MailService {
       });
   }
 
-  @OnEvent(ApplicationEvent.MEETING_CREATE)
+  @OnEvent(MeetingEvent.MEETING_CREATE)
   public async sendMeetingInvitation(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
@@ -65,7 +65,7 @@ export class MailService {
     });
   }
 
-  @OnEvent(ApplicationEvent.MEETING_BEFORE_START)
+  @OnEvent(MeetingEvent.MEETING_BEFORE_START)
   public async sendMailBeforeMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
@@ -83,7 +83,7 @@ export class MailService {
     });
   }
 
-  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  @OnEvent(MeetingEvent.MEETING_DELETE)
   public async sendMailMeetingCancelled(
     meeting: MeetingWithAttendees,
   ): Promise<void> {

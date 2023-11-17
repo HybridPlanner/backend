@@ -7,9 +7,9 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from './meetings.type';
 import { RainbowService } from 'src/rainbow/rainbow.service';
 import { Observable, Subject } from 'rxjs';
-import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { MeetingEvent } from 'src/types/MeetingEvents';
 
-export type MeetingEvent =
+export type MeetingSSE =
   | { type: 'bubbleCreated'; id: number; meeting: MeetingWithAttendees }
   | { type: 'updated'; id: number; meeting: MeetingWithAttendees }
   | { type: 'cancelled'; id: number }
@@ -18,9 +18,9 @@ export type MeetingEvent =
 @Injectable()
 export class MeetingsService {
   private readonly logger = new Logger(MeetingsService.name);
-  private readonly _meetings = new Subject<MeetingEvent>();
+  private readonly _meetings = new Subject<MeetingSSE>();
 
-  public get meetings(): Observable<MeetingEvent> {
+  public get meetings(): Observable<MeetingSSE> {
     return this._meetings.asObservable();
   }
 
@@ -47,10 +47,7 @@ export class MeetingsService {
       },
     });
     const meetingWithAttendees = await this.findOneWithAttendees(meeting.id);
-    this.eventEmitter.emit(
-      ApplicationEvent.MEETING_CREATE,
-      meetingWithAttendees,
-    );
+    this.eventEmitter.emit(MeetingEvent.MEETING_CREATE, meetingWithAttendees);
     return meeting;
   }
 
@@ -141,7 +138,7 @@ export class MeetingsService {
       id: meeting.id,
       meeting: await this.findOneWithAttendees(meeting.id),
     });
-    this.eventEmitter.emit(ApplicationEvent.MEETING_UPDATE, meeting);
+    this.eventEmitter.emit(MeetingEvent.MEETING_UPDATE, meeting);
     return meeting;
   }
 
@@ -158,11 +155,11 @@ export class MeetingsService {
       type: 'cancelled',
       id: meeting.id,
     });
-    this.eventEmitter.emit(ApplicationEvent.MEETING_DELETE, meeting);
+    this.eventEmitter.emit(MeetingEvent.MEETING_DELETE, meeting);
     return meeting;
   }
 
-  @OnEvent(ApplicationEvent.MEETING_START)
+  @OnEvent(MeetingEvent.MEETING_START)
   public async startMeeting(meeting: MeetingWithAttendees): Promise<void> {
     this.logger.debug(`Starting meeting "${meeting.id}"`);
 
@@ -188,7 +185,7 @@ export class MeetingsService {
     });
   }
 
-  @OnEvent(ApplicationEvent.MEETING_BEFORE_START)
+  @OnEvent(MeetingEvent.MEETING_BEFORE_START)
   public async createBubbleBeforeMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {

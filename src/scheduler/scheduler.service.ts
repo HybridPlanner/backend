@@ -4,7 +4,7 @@ import { CronJob } from 'cron';
 import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 import { isBefore, subMinutes } from 'date-fns';
-import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { MeetingEvent } from 'src/types/MeetingEvents';
 
 const TIME_BEFORE_MEETING_START = 15; // IN minutes
 
@@ -18,7 +18,7 @@ export class SchedulerService {
     this.coldBootSchedulingInit();
   }
 
-  @OnEvent(ApplicationEvent.MEETING_CREATE)
+  @OnEvent(MeetingEvent.MEETING_CREATE)
   public async scheduleBubbleCreation(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
@@ -36,11 +36,11 @@ export class SchedulerService {
       this.logger.debug(
         "Creating bubble now because it's less than 15 minutes before meeting start",
       );
-      this.eventEmitter.emit(ApplicationEvent.MEETING_BEFORE_START, meeting);
+      this.eventEmitter.emit(MeetingEvent.MEETING_BEFORE_START, meeting);
     } else {
       this.logger.debug('Scheduling bubble creation');
       const creationJob = new CronJob(bubbleCreationDate, async () => {
-        this.eventEmitter.emit(ApplicationEvent.MEETING_BEFORE_START, meeting);
+        this.eventEmitter.emit(MeetingEvent.MEETING_BEFORE_START, meeting);
       });
       creationJob.start();
 
@@ -52,7 +52,7 @@ export class SchedulerService {
 
     // schedule bubble call start at meeting start
     const startJob = new CronJob(bubbleStartDate, async () => {
-      this.eventEmitter.emit(ApplicationEvent.MEETING_START, meeting);
+      this.eventEmitter.emit(MeetingEvent.MEETING_START, meeting);
     });
     startJob.start();
 
