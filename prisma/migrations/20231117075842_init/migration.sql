@@ -1,13 +1,24 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE "Meeting" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "start_date" DATETIME NOT NULL,
+    "end_date" DATETIME NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    "bubbleId" TEXT,
+    "started" BOOLEAN NOT NULL DEFAULT false,
+    "publicUrl" TEXT
+);
 
-  - You are about to drop the `_MeetingToUser` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropTable
-PRAGMA foreign_keys=off;
-DROP TABLE "_MeetingToUser";
-PRAGMA foreign_keys=on;
+-- CreateTable
+CREATE TABLE "User" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL
+);
 
 -- CreateTable
 CREATE TABLE "Attendee" (
@@ -22,6 +33,9 @@ CREATE TABLE "_AttendeeToMeeting" (
     CONSTRAINT "_AttendeeToMeeting_A_fkey" FOREIGN KEY ("A") REFERENCES "Attendee" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "_AttendeeToMeeting_B_fkey" FOREIGN KEY ("B") REFERENCES "Meeting" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Attendee_email_key" ON "Attendee"("email");
