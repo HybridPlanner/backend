@@ -3,10 +3,11 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { OnEvent, EventEmitter2 } from '@nestjs/event-emitter';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
-import { isBefore, subMinutes } from 'date-fns';
+import { addDays, isBefore, subMinutes } from 'date-fns';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 
-const TIME_BEFORE_MEETING_START = 15; // IN minutes
+const MINUTES_BEFORE_MEETING_START = 15;
+const DAY_AFTER_MEETING_DELETION = 1;
 
 @Injectable()
 export class SchedulerService {
@@ -28,7 +29,7 @@ export class SchedulerService {
     const bubbleStartDate = new Date(meeting.start_date);
     const bubbleCreationDate = subMinutes(
       bubbleStartDate,
-      TIME_BEFORE_MEETING_START,
+      MINUTES_BEFORE_MEETING_START,
     );
 
     // Are we after the bubble creation date?
@@ -60,6 +61,33 @@ export class SchedulerService {
       `meeting-${meeting.id}-bubble-start`,
       startJob,
     );
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_START)
+  public async scheduleBubbleDeletion(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    this.logger.debug(`Scheduling bubble deletion for meeting ${meeting.id}`);
+
+    const bubbleStartDate = new Date(meeting.start_date);
+    const bubbleDeletionDate = addDays(
+      bubbleStartDate,
+      DAY_AFTER_MEETING_DELETION,
+    );
+
+    if (isBefore(bubbleDeletionDate, new Date())) {
+      this.eventEmitter.emit(ApplicationEvent.MEETING_DELETE, meeting);
+    } else {
+      const deletionJob = new CronJob(bubbleDeletionDate, async () => {
+        this.eventEmitter.emit(ApplicationEvent.MEETING_DELETE, meeting);
+      });
+      deletionJob.start();
+
+      this.schedulerRegistry.addCronJob(
+        `meeting-${meeting.id}-bubble-deletion`,
+        deletionJob,
+      );
+    }
   }
 
   /**

@@ -68,10 +68,7 @@ export class MeetingsService {
     });
   }
 
-  public findAllPrevious(
-    previous: Date,
-    limit: number = 5,
-  ): Promise<Meeting[]> {
+  public findAllPrevious(previous: Date, limit = 5): Promise<Meeting[]> {
     return this.database.meeting.findMany({
       take: limit,
       where: {
@@ -222,5 +219,13 @@ export class MeetingsService {
     });
 
     this.logger.log(`Bubble ${bubble.id} created for meeting ${meeting.id}`);
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  public async deleteBubbleAfterMeeting(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
+    await this.delete(meeting.id);
   }
 }
