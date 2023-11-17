@@ -58,20 +58,29 @@ export class MeetingsService {
     return this.database.meeting.findMany({
       take: limit,
       where: {
-        start_date: {
+        end_date: {
           gte: new Date(),
         },
+      },
+      orderBy: {
+        end_date: 'desc',
       },
     });
   }
 
-  public findAllPrevious(previous: Date, limit?: number): Promise<Meeting[]> {
+  public findAllPrevious(
+    previous: Date,
+    limit: number = 5,
+  ): Promise<Meeting[]> {
     return this.database.meeting.findMany({
       take: limit,
       where: {
-        start_date: {
+        end_date: {
           lt: previous,
         },
+      },
+      orderBy: {
+        end_date: 'desc',
       },
     });
   }

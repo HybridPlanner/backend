@@ -35,14 +35,14 @@ export class MeetingsController {
 
   @Get()
   public async findAll(
-    @Query('before') previous?: number,
+    @Query('before') previous?: string,
   ): Promise<{ meetings: Meeting[] }> {
     if (!previous) {
       const meetings = await this.meetingsService.findAll();
       return { meetings };
     }
 
-    const previousDate = new Date(previous * 1000);
+    const previousDate = new Date(previous);
 
     if (!isValid(previousDate)) {
       throw new BadRequestException(
