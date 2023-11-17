@@ -6,8 +6,6 @@ import { MeetingsModule } from './meetings/meetings.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
 import { MailService } from './mail/mail.service';
-//import { AuthGuard } from './auth/auth.guard';
-//import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulerService } from './scheduler/scheduler.service';
 import { RainbowService } from './rainbow/rainbow.service';
@@ -19,34 +17,18 @@ import { RainbowModule } from './rainbow/rainbow.module';
     ConfigModule.forRoot(),
     EventEmitterModule.forRoot(),
     MeetingsModule,
-    // Disabled for now, authentication should be added later as a bonus
-    // AuthModule,
     UsersModule,
     MailModule,
     ScheduleModule.forRoot(),
     RainbowModule,
   ],
   controllers: [AppController],
-  providers: [
-    DatabaseService,
-    SchedulerService,
-    RainbowService,
-    /*{
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },*/
-  ],
+  providers: [DatabaseService, SchedulerService, RainbowService],
 })
 export class AppModule {
   public constructor(
     private mailService: MailService,
     private schedulerService: SchedulerService,
     private rainbowService: RainbowService,
-  ) {
-    // const inOneMinute = new Date(Date.now() + 60 * 1000);
-    // this.schedulerService.scheduleMail(
-    //   inOneMinute,
-    //   'hello.world@gmail.com',
-    // );
-  }
+  ) {}
 }

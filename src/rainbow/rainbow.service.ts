@@ -5,19 +5,13 @@ import { type BubblesService } from 'rainbow-node-sdk/lib/services/BubblesServic
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 import { EnvConfig } from '../config';
 import { Contact } from 'rainbow-node-sdk/lib/common/models/Contact';
-import { MeetingWithAttendees } from 'src/meetings/meetings.type';
-import { MeetingsService } from 'src/meetings/meetings.service';
-import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class RainbowService implements OnApplicationShutdown {
   private readonly logger = new Logger(RainbowService.name);
   private rainbowSDK: RainbowSDK;
 
-  public constructor(
-    private meetingService: MeetingsService,
-    private config: ConfigService<EnvConfig>,
-  ) {
+  public constructor(private config: ConfigService<EnvConfig>) {
     this.rainbowSDK = new RainbowSDK({
       rainbow: {
         host: this.config.get<string>('RAINBOW_HOST'),
@@ -90,22 +84,28 @@ export class RainbowService implements OnApplicationShutdown {
     await this.rainbowSDK.stop();
   }
 
-  public async createBubble(
-    name: string,
-    description: string,
-  ): Promise<Bubble> {
+  public async createBubble(name: string): Promise<Bubble> {
     const bubble = (await (
       this.rainbowSDK.bubbles as BubblesService
-    ).createBubble(name, description, false)) as Bubble;
+    ).createBubble(name, 'Generated with Hybrid Planner', false)) as Bubble;
 
     return bubble;
   }
 
-  public getBubble(name: string): Bubble {
+  public getBubbleByName(name: string): Bubble {
     const bubbles = (
       this.rainbowSDK.bubbles as BubblesService
     ).getAllOwnedBubbles();
     const bubble = bubbles.find((b) => b.name === name);
+
+    return bubble;
+  }
+
+  public getBubbleByID(id: string): Bubble {
+    const bubbles = (
+      this.rainbowSDK.bubbles as BubblesService
+    ).getAllOwnedBubbles();
+    const bubble = bubbles.find((b) => b.id === id);
 
     return bubble;
   }
@@ -154,15 +154,11 @@ export class RainbowService implements OnApplicationShutdown {
     return conference;
   }
 
-  @OnEvent('meeting.beforeStart')
-  public async createBubbleBeforeMeeting(
-    meeting: MeetingWithAttendees,
-  ): Promise<void> {
-    const bubble = await this.createBubble(meeting.title, meeting.description);
-    await this.meetingService.update(meeting.id, {
-      bubbleId: bubble.id,
-    });
+  public async getBubblePublicUrl(bubble: Bubble): Promise<string> {
+    const url = await (
+      this.rainbowSDK.bubbles as BubblesService
+    ).createPublicUrl(bubble);
 
-    this.logger.log(`Bubble ${bubble.id} created for meeting ${meeting.id}`);
+    return url;
   }
 }

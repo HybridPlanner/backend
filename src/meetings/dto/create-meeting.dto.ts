@@ -5,4 +5,5 @@ export class CreateMeetingDto {
   public end_date: Date;
   public attendees: string[];
   public bubbleId?: string;
+  public publicUrl?: string;
 }

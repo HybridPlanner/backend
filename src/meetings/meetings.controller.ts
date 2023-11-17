@@ -9,6 +9,10 @@ import {
   BadRequestException,
   Query,
   Logger,
+  Sse,
+  NotFoundException,
+  ParseIntPipe,
+  MessageEvent,
 } from '@nestjs/common';
 import { MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
@@ -16,6 +20,7 @@ import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { Attendee, Meeting } from '@prisma/client';
 import { isAfter, isValid } from 'date-fns';
 import { MeetingWithAttendees } from './meetings.type';
+import { Observable, filter, map } from 'rxjs';
 
 @Controller('meetings')
 export class MeetingsController {
@@ -55,14 +60,22 @@ export class MeetingsController {
     return { meetings };
   }
 
-  @Get('/attendees?')
+  @Get('attendees')
   public findAttendees(@Query('email') email: string): Promise<Attendee[]> {
     return this.meetingsService.findAttendees(email);
   }
 
   @Get(':id')
-  public findOne(@Param('id') id: string): Promise<MeetingWithAttendees> {
-    return this.meetingsService.findOneWithAttendees(+id);
+  public async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<MeetingWithAttendees> {
+    const meeting = await this.meetingsService.findOneWithAttendees(+id);
+
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
+    }
+
+    return meeting;
   }
 
   @Patch(':id')
@@ -74,7 +87,15 @@ export class MeetingsController {
   }
 
   @Delete(':id')
-  public delete(@Param('id') id: string): Promise<Meeting> {
-    return this.meetingsService.delete(+id);
+  public delete(@Param('id', ParseIntPipe) id: number): Promise<Meeting> {
+    return this.meetingsService.delete(id);
+  }
+
+  @Sse(':id/events')
+  public sse(@Param('id', ParseIntPipe) id: number): Observable<MessageEvent> {
+    return this.meetingsService.meetings.pipe(
+      filter((event) => event.id === +id),
+      map((event) => ({ data: event })),
+    );
   }
 }
