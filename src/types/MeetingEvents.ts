@@ -4,6 +4,8 @@ export enum ApplicationEvent {
   MEETING_DELETE = 'meeting.delete',
 
   MEETING_START = 'meeting.start',
-  MEETING_BEFORE_START = 'meeting.beforeStart',
   MEETING_END = 'meeting.end',
+  MEETING_CANCEL_END = 'meeting.cancelEnd',
+  MEETING_BEFORE_START = 'meeting.beforeStart',
+  MEETING_CLEANING = 'meeting.cleaning',
 }

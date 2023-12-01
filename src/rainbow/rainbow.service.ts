@@ -5,13 +5,18 @@ import { type BubblesService } from 'rainbow-node-sdk/lib/services/BubblesServic
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 import { EnvConfig } from '../config';
 import { Contact } from 'rainbow-node-sdk/lib/common/models/Contact';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ApplicationEvent } from 'src/types/MeetingEvents';
 
 @Injectable()
 export class RainbowService implements OnApplicationShutdown {
   private readonly logger = new Logger(RainbowService.name);
   private rainbowSDK: RainbowSDK;
 
-  public constructor(private config: ConfigService<EnvConfig>) {
+  public constructor(
+    private config: ConfigService<EnvConfig>,
+    private eventEmitter: EventEmitter2,
+  ) {
     this.rainbowSDK = new RainbowSDK({
       rainbow: {
         host: this.config.get<string>('RAINBOW_HOST'),
@@ -46,38 +51,21 @@ export class RainbowService implements OnApplicationShutdown {
 
     this.rainbowSDK.events.on('rainbow_onready', async () => {
       Logger.log('Rainbow SDK started');
-
-      /*const BUBBLE_NAME = 'Demo';
-      const BUBBLE_DESCRIPTION = 'Demo bubble';
-
-      let bubble = this.getBubble(BUBBLE_NAME);
-      if (!bubble) {
-        Logger.log(`"${BUBBLE_NAME}" not found, creating...`);
-        bubble = await this.createBubble(BUBBLE_NAME, BUBBLE_DESCRIPTION);
-        Logger.log(`"${BUBBLE_NAME}" created`);
-      } else {
-        Logger.log(`"${BUBBLE_NAME}" found`);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      // Start a conference
-      Logger.log(`Calling "${BUBBLE_NAME}"...`);
-      await this.callBubble(bubble);
-
-      await new Promise((resolve) => setTimeout(resolve, 15000));
-
-      // Hangup conference
-      Logger.log(`Hanging up "${BUBBLE_NAME}"...`);
-      await this.hangupBubble(bubble);
-
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      // Delete bubble
-      Logger.log(`Deleting "${BUBBLE_NAME}"...`);
-      await this.deleteBubble(bubble);
-      Logger.log(`"${BUBBLE_NAME}" deleted`);*/
     });
+
+    this.rainbowSDK.events.on(
+      'rainbow_onbubbleconferencestoppedreceived',
+      (bubble: Bubble) => {
+        this.eventEmitter.emit(ApplicationEvent.MEETING_END, bubble);
+      },
+    );
+
+    this.rainbowSDK.events.on(
+      'rainbow_onbubbleconferencestartedreceived',
+      (bubble: Bubble) => {
+        this.eventEmitter.emit(ApplicationEvent.MEETING_CANCEL_END, bubble);
+      },
+    );
   }
 
   public async onApplicationShutdown(): Promise<void> {

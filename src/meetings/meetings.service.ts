@@ -8,6 +8,7 @@ import { MeetingStatus, MeetingWithAttendees } from './meetings.type';
 import { RainbowService } from 'src/rainbow/rainbow.service';
 import { Observable, Subject } from 'rxjs';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 
 export type MeetingEvent =
   | { type: 'bubbleCreated'; id: number; meeting: MeetingWithAttendees }
@@ -73,10 +74,7 @@ export class MeetingsService {
     });
   }
 
-  public findAllPrevious(
-    previous: Date,
-    limit: number = 5,
-  ): Promise<Meeting[]> {
+  public findAllPrevious(previous: Date, limit = 5): Promise<Meeting[]> {
     return this.database.meeting.findMany({
       take: limit,
       where: {
@@ -238,6 +236,18 @@ export class MeetingsService {
     this.logger.log(`Bubble ${bubble.id} created for meeting ${meeting.id}`);
   }
 
+  @OnEvent(ApplicationEvent.MEETING_CLEANING)
+  public async deleteBubbleAfterMeeting(bubble: Bubble): Promise<void> {
+    const meeting = await this.database.meeting.findFirst({
+      where: {
+        bubbleId: bubble.id,
+      },
+    });
+    this.update(meeting.id, {
+      status: MeetingStatus.FINISHED,
+    });
+    await this.rainbow.deleteBubble(bubble);
+  }
   @OnEvent(ApplicationEvent.MEETING_DELETE)
   public async deleteBubble(meeting: MeetingWithAttendees): Promise<void> {
     this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
