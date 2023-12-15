@@ -208,6 +208,16 @@ export class MeetingsService {
     });
   }
 
+  @OnEvent(ApplicationEvent.MEETING_END)
+  public async endMeeting(meeting: MeetingWithAttendees): Promise<void> {
+    this.logger.debug(`Ending meeting "${meeting.id}"`);
+
+    await this.database.meeting.update({
+      where: { id: meeting.id },
+      data: { started: false, status: MeetingStatus.FINISHED },
+    });
+  }
+
   @OnEvent(ApplicationEvent.MEETING_BEFORE_START)
   public async createBubbleBeforeMeeting(
     meeting: MeetingWithAttendees,
