@@ -26,10 +26,38 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Docker usage
+
+```bash
+# Define the environment variables 
+$ cp .env.example .env
+
+# Start the containers
+$ docker-compose up -d
+
+# Enter the api container
+$ docker-compose exec -it app bash
+
+# Stop the containers
+$ docker-compose down
+```
+
 ## Installation
 
 ```bash
 $ npm install
+```
+
+## Generate prisma behaviour
+
+```bash
+npx prisma generate
+```
+
+## Run prisma migrations
+
+```bash
+npx prisma migrate reset
 ```
 
 ## Running the app
@@ -45,6 +73,14 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Creating migration
+
+### Update migration after updating schema.prisma
+
+```bash
+npx prisma migrate dev --name "name of migration"
+```
+
 ## Test
 
 ```bash
@@ -57,6 +93,12 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+## Mailhog
+
+- Make sure to run the mailhog container
+- Upate the values in the .env file `MAILHOG_HOST` either localhost or mailhog depending on the environment you are running (docker or local)
+- To use mailhog locally, go to http://localhost:8025/
 
 ## Support
 

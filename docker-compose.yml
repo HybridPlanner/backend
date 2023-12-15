@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: hybridplanner-backend
+    image: node:latest
+    ports:
+      - $PORT:${PORT:-8080}
+      - $PRISMA_STUDIO_PORT:${PRISMA_STUDIO_PORT:-5555}
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: tail -f /dev/null
+    networks:
+      - hybridplanner
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - hybridplanner
+
+networks:
+  hybridplanner:
+    driver: bridge
+    name: hybridplanner
