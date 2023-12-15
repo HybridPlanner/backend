@@ -253,7 +253,7 @@ export class MeetingsService {
     // Update the meeting status
     await this.database.meeting.update({
       where: { id: meeting.id },
-      data: { started: true, status: MeetingStatus.STARTED },
+      data: { status: MeetingStatus.STARTED },
     });
 
     this._meetings.next({
@@ -274,7 +274,7 @@ export class MeetingsService {
 
     await this.database.meeting.update({
       where: { id: meeting.id },
-      data: { started: false, status: MeetingStatus.FINISHED },
+      data: { status: MeetingStatus.FINISHED },
     });
   }
 
