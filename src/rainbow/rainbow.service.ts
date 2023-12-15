@@ -8,11 +8,20 @@ import { Contact } from 'rainbow-node-sdk/lib/common/models/Contact';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 
+/**
+ * Service class for interacting with the RainbowSDK.
+ * Implements the OnApplicationShutdown interface to handle application shutdown events.
+ */
 @Injectable()
 export class RainbowService implements OnApplicationShutdown {
   private readonly logger = new Logger(RainbowService.name);
   private rainbowSDK: RainbowSDK;
 
+  /**
+   * Constructs a new instance of the RainbowService class.
+   * @param config - The configuration service for environment variables.
+   * @param eventEmitter - The event emitter for handling application events.
+   */
   public constructor(
     private config: ConfigService<EnvConfig>,
     private eventEmitter: EventEmitter2,
@@ -68,10 +77,19 @@ export class RainbowService implements OnApplicationShutdown {
     );
   }
 
+  /**
+   * Handles the application shutdown event.
+   * @returns A promise that resolves when the shutdown process is complete.
+   */
   public async onApplicationShutdown(): Promise<void> {
     await this.rainbowSDK.stop();
   }
 
+  /**
+   * Creates a new bubble with the given name.
+   * @param name - The name of the bubble.
+   * @returns A Promise that resolves to the created Bubble object.
+   */
   public async createBubble(name: string): Promise<Bubble> {
     const bubble = (await (
       this.rainbowSDK.bubbles as BubblesService
@@ -80,6 +98,12 @@ export class RainbowService implements OnApplicationShutdown {
     return bubble;
   }
 
+  /**
+   * Updates the bubble with the specified ID and name.
+   * @param bubbleId The ID of the bubble to update.
+   * @param name The new name for the bubble.
+   * @returns A Promise that resolves to the updated Bubble object.
+   */
   public async updateBubble(bubbleId: string, name: string): Promise<Bubble> {
     const bubble = (await (
       this.rainbowSDK.bubbles as BubblesService
@@ -93,6 +117,11 @@ export class RainbowService implements OnApplicationShutdown {
     return bubble;
   }
 
+  /**
+   * Retrieves a bubble by its name.
+   * @param name - The name of the bubble.
+   * @returns The bubble with the specified name, or undefined if not found.
+   */
   public getBubbleByName(name: string): Bubble {
     const bubbles = (
       this.rainbowSDK.bubbles as BubblesService
@@ -102,6 +131,11 @@ export class RainbowService implements OnApplicationShutdown {
     return bubble;
   }
 
+  /**
+   * Retrieves a bubble by its ID.
+   * @param id The ID of the bubble to retrieve.
+   * @returns The bubble with the specified ID, or undefined if not found.
+   */
   public getBubbleByID(id: string): Bubble {
     const bubbles = (
       this.rainbowSDK.bubbles as BubblesService
@@ -111,10 +145,22 @@ export class RainbowService implements OnApplicationShutdown {
     return bubble;
   }
 
+  /**
+   * Deletes a bubble.
+   * @param bubble - The bubble to be deleted.
+   * @returns A promise that resolves when the bubble is deleted.
+   */
   public async deleteBubble(bubble: Bubble): Promise<void> {
     await (this.rainbowSDK.bubbles as BubblesService).deleteBubble(bubble);
   }
 
+  /**
+   * Adds a Rainbow user to a bubble.
+   * @param bubble - The bubble to add the user to.
+   * @param user - The user to be added to the bubble.
+   * @param inviteReason - The reason for inviting the user to the bubble.
+   * @returns A Promise that resolves when the user has been added to the bubble.
+   */
   public async addRainbowUserToBubble(
     bubble: Bubble,
     user: Contact,
@@ -129,6 +175,12 @@ export class RainbowService implements OnApplicationShutdown {
     );
   }
 
+  /**
+   * Removes a Rainbow user from a bubble.
+   * @param bubble - The bubble from which the user will be removed.
+   * @param user - The user to be removed from the bubble.
+   * @returns A Promise that resolves when the user has been removed from the bubble.
+   */
   public async removeRainbowUserFromBubble(
     bubble: Bubble,
     user: Contact,
@@ -139,6 +191,11 @@ export class RainbowService implements OnApplicationShutdown {
     );
   }
 
+  /**
+   * Calls the bubble and starts a conference or webinar in a room.
+   * @param bubble - The bubble to call.
+   * @returns A promise that resolves with the conference object.
+   */
   public async callBubble(bubble: Bubble): Promise<unknown> {
     const conference = await (
       this.rainbowSDK.bubbles as BubblesService
@@ -147,6 +204,11 @@ export class RainbowService implements OnApplicationShutdown {
     return conference;
   }
 
+  /**
+   * Hangs up a bubble by stopping the conference or webinar associated with it.
+   * @param bubble - The bubble to hang up.
+   * @returns A promise that resolves with the conference object.
+   */
   public async hangupBubble(bubble: Bubble): Promise<unknown> {
     const conference = await (
       this.rainbowSDK.bubbles as BubblesService
@@ -155,6 +217,11 @@ export class RainbowService implements OnApplicationShutdown {
     return conference;
   }
 
+  /**
+   * Retrieves the public URL for a given bubble.
+   * @param bubble - The bubble for which to retrieve the public URL.
+   * @returns A Promise that resolves to the public URL of the bubble.
+   */
   public async getBubblePublicUrl(bubble: Bubble): Promise<string> {
     const url = await (
       this.rainbowSDK.bubbles as BubblesService

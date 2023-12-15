@@ -5,6 +5,9 @@ import { MailService } from './mail.service';
 import { join } from 'path';
 import { IcsService } from 'src/ics/ics.service';
 
+/**
+ * Module for handling email functionality.
+ */
 @Module({
   imports: [
     MailerModule.forRoot({

@@ -5,6 +5,10 @@ import { isBefore } from 'date-fns';
 import { IcsService } from 'src/ics/ics.service';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
+
+/**
+ * Service responsible for sending mails.
+ */
 @Injectable()
 export class MailService {
   public constructor(
@@ -13,6 +17,11 @@ export class MailService {
   ) {}
 
   @OnEvent('user.create')
+  /**
+   * Sends a user confirmation email.
+   * @param to - The email address of the recipient.
+   * @returns A Promise that resolves when the email is sent successfully, or rejects if there is an error.
+   */
   public async sendUserConfirmation(to: string): Promise<void> {
     const url = `example.com/auth/confirm`;
 
@@ -37,6 +46,11 @@ export class MailService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_CREATE)
+  /**
+   * Sends a meeting invitation email to the attendees.
+   * @param meeting - The meeting object containing the details of the meeting and attendees.
+   * @returns A Promise that resolves when the email is sent successfully.
+   */
   public async sendMeetingInvitation(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
@@ -66,6 +80,11 @@ export class MailService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_BEFORE_START)
+  /**
+   * Sends a reminder email to the attendees before a meeting.
+   * @param meeting - The meeting object.
+   * @returns A Promise that resolves when the email is sent successfully.
+   */
   public async sendMailBeforeMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
@@ -84,6 +103,11 @@ export class MailService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_DELETE)
+  /**
+   * Sends an email notification to the attendees when a meeting is cancelled.
+   * @param meeting - The meeting that has been cancelled.
+   * @returns A Promise that resolves when the email has been sent.
+   */
   public async sendMailMeetingCancelled(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
