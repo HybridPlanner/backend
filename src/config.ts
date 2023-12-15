@@ -18,6 +18,9 @@ export interface EnvConfig {
   RAINBOW_APPLICATION_SECRET: string;
 }
 
+/**
+ * Configuration options for the application.
+ */
 const configOptions: ConfigModuleOptions = {
   validationSchema: Joi.object({
     PORT: Joi.number().default(3000).required(),

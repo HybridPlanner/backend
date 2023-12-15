@@ -3,6 +3,11 @@ import { Logger } from '@nestjs/common';
 import * as ics from 'ics';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 
+/**
+ * Creates an ICS file for a meeting with attendees.
+ * @param meeting - The meeting object.
+ * @returns A promise that resolves to the generated ICS file as a string.
+ */
 @Injectable()
 export class IcsService {
   private readonly logger = new Logger(IcsService.name);
