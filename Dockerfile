@@ -1,15 +1,16 @@
-FROM node:20-alpine as builder
+FROM node:18-alpine as builder
 
 #######################################################################
 WORKDIR /app
 
 COPY . .
 RUN npm ci
+RUN npx prisma generate
 RUN npm run build
 RUN npm prune --production
 
 #######################################################################
-FROM node:20-alpine
+FROM node:18-alpine
 
 WORKDIR /app
 COPY --from=builder /app/package*.json .

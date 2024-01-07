@@ -5,6 +5,9 @@ import { UsersModule } from 'src/users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './auth.constants';
 
+/**
+ * Module responsible for authentication-related functionality.
+ */
 @Module({
   imports: [
     UsersModule,

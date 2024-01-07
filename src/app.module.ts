@@ -12,6 +12,9 @@ import { RainbowService } from './rainbow/rainbow.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { RainbowModule } from './rainbow/rainbow.module';
 
+/**
+ * Represents the main module of the application.
+ */
 @Module({
   imports: [
     ConfigModule.forRoot(),

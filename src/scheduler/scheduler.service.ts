@@ -11,9 +11,18 @@ import { MeetingsService } from 'src/meetings/meetings.service';
 const MINUTES_BEFORE_MEETING_START = 15;
 const MINUTES_BEFORE_MEETING_CLEANING = 30;
 
+/**
+ * Service class for scheduling bubbles.
+ */
 @Injectable()
 export class SchedulerService {
   private readonly logger = new Logger(SchedulerService.name);
+  /**
+   * Creates an instance of the SchedulerService.
+   * @param eventEmitter - The event emitter used for event handling.
+   * @param schedulerRegistry - The scheduler registry used for managing schedulers.
+   * @param meetingsService - The meetings service used for managing meetings.
+   */
   public constructor(
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
@@ -23,6 +32,11 @@ export class SchedulerService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_CREATE)
+  /**
+   * Schedules the creation of a bubble for a meeting.
+   * @param meeting - The meeting with attendees.
+   * @returns A Promise that resolves when the bubble creation is scheduled.
+   */
   public async scheduleBubbleCreation(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
@@ -55,6 +69,11 @@ export class SchedulerService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_CREATE)
+  /**
+   * Schedules the start of a bubble for a meeting.
+   * @param meeting - The meeting with attendees.
+   * @returns A Promise that resolves when the bubble start is scheduled.
+   */
   public async scheduleBubbleStart(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
@@ -71,6 +90,11 @@ export class SchedulerService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_END)
+  /**
+   * Schedules bubble cleaning for a given bubble.
+   * @param bubble - The bubble to schedule cleaning for.
+   * @returns A promise that resolves when the bubble cleaning is scheduled.
+   */
   public async scheduleBubbleCleaning(bubble: Bubble): Promise<void> {
     this.logger.debug(`Scheduling bubble cleaning for id ${bubble.id}`);
 
@@ -91,12 +115,19 @@ export class SchedulerService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_CANCEL_END)
+  /**
+   * Cancels the bubble cleaning for a given bubble.
+   * @param bubble - The bubble for which the cleaning is to be canceled.
+   * @returns A promise that resolves when the cleaning is canceled.
+   */
   public async cancelBubbleCleaning(bubble: Bubble): Promise<void> {
     this.schedulerRegistry.deleteCronJob(`bubble-${bubble.id}-cleaning`);
   }
 
   /**
-   * This method is called when the application starts. It is used to restore the scheduled jobs from the database.
+   * Initializes the cold boot scheduling process.
+   * Retrieves all meetings and schedules bubble creation and start for each meeting.
+   * @returns A Promise that resolves when the scheduling process is complete.
    */
   private async coldBootSchedulingInit(): Promise<void> {
     const meetings = await this.meetingsService.findAll(true);

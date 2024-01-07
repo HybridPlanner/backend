@@ -16,6 +16,9 @@ export type MeetingEvent =
   | { type: 'cancelled'; id: number }
   | { type: 'started'; id: number; url: string };
 
+/**
+ * Service for managing meetings.
+ */
 @Injectable()
 export class MeetingsService {
   private readonly logger = new Logger(MeetingsService.name);
@@ -31,6 +34,11 @@ export class MeetingsService {
     private rainbow: RainbowService,
   ) {}
 
+  /**
+   * Creates a new meeting with attendees.
+   * @param createMeetingDto - The data for creating the meeting.
+   * @returns A promise that resolves to the created meeting with attendees.
+   */
   public async create(
     createMeetingDto: CreateMeetingDto,
   ): Promise<MeetingWithAttendees> {
@@ -56,6 +64,11 @@ export class MeetingsService {
     return meeting;
   }
 
+  /**
+   * Retrieves all meetings from the database.
+   * @param withAttendees - Indicates whether to include attendees in the result.
+   * @returns A promise that resolves to an array of MeetingWithAttendees objects.
+   */
   public findAll(
     withAttendees: boolean = false,
   ): Promise<MeetingWithAttendees[]> {
@@ -74,6 +87,12 @@ export class MeetingsService {
     });
   }
 
+  /**
+   * Retrieves a list of previous meetings based on a given date.
+   * @param previous - The date to compare against.
+   * @param limit - The maximum number of meetings to retrieve (default: 5).
+   * @returns A promise that resolves to an array of Meeting objects.
+   */
   public findAllPrevious(previous: Date, limit = 5): Promise<Meeting[]> {
     return this.database.meeting.findMany({
       take: limit,
@@ -88,6 +107,11 @@ export class MeetingsService {
     });
   }
 
+  /**
+   * Finds attendees based on their email.
+   * @param email - The email to search for.
+   * @returns A promise that resolves to an array of Attendee objects.
+   */
   public findAttendees(email: string): Promise<Attendee[]> {
     return this.database.attendee.findMany({
       where: {
@@ -98,6 +122,11 @@ export class MeetingsService {
     });
   }
 
+  /**
+   * Retrieves a meeting by its ID.
+   * @param id - The ID of the meeting.
+   * @returns A Promise that resolves to the meeting object if found, or null if not found.
+   */
   public findOne(id: number): Promise<Meeting | null> {
     return this.database.meeting.findUnique({
       where: {
@@ -106,6 +135,11 @@ export class MeetingsService {
     });
   }
 
+  /**
+   * Retrieves a meeting with its attendees by ID.
+   * @param id - The ID of the meeting.
+   * @returns A Promise that resolves to a MeetingWithAttendees object if found, or null if not found.
+   */
   public findOneWithAttendees(
     id: number,
   ): Promise<MeetingWithAttendees | null> {
@@ -119,6 +153,11 @@ export class MeetingsService {
     });
   }
 
+  /**
+   * Finds a meeting by bubble ID.
+   * @param bubbleId - The ID of the bubble.
+   * @returns A promise that resolves to the found meeting or null if not found.
+   */
   public findMeetingByBubbleId(bubbleId: string): Promise<Meeting | null> {
     return this.database.meeting.findFirst({
       where: {
@@ -127,6 +166,12 @@ export class MeetingsService {
     });
   }
 
+  /**
+   * Updates a meeting with the specified ID.
+   * @param id - The ID of the meeting to update.
+   * @param updateMeetingDto - The data to update the meeting with.
+   * @returns A Promise that resolves to the updated meeting.
+   */
   public async update(
     id: number,
     updateMeetingDto: UpdateMeetingDto,
@@ -165,6 +210,11 @@ export class MeetingsService {
     return meeting;
   }
 
+  /**
+   * Deletes a meeting with the specified ID.
+   * @param id - The ID of the meeting to delete.
+   * @returns A Promise that resolves to the deleted meeting.
+   */
   public async delete(id: number): Promise<Meeting> {
     const meeting: MeetingWithAttendees = await this.database.meeting.delete({
       where: {
@@ -183,6 +233,11 @@ export class MeetingsService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_START)
+  /**
+   * Starts a meeting.
+   * @param meeting - The meeting object.
+   * @returns A promise that resolves when the meeting has started.
+   */
   public async startMeeting(meeting: MeetingWithAttendees): Promise<void> {
     this.logger.debug(`Starting meeting "${meeting.id}"`);
 
@@ -198,7 +253,7 @@ export class MeetingsService {
     // Update the meeting status
     await this.database.meeting.update({
       where: { id: meeting.id },
-      data: { started: true, status: MeetingStatus.STARTED },
+      data: { status: MeetingStatus.STARTED },
     });
 
     this._meetings.next({
@@ -208,7 +263,27 @@ export class MeetingsService {
     });
   }
 
+  @OnEvent(ApplicationEvent.MEETING_END)
+  /**
+   * Ends a meeting by updating its status and marking it as finished.
+   * @param meeting - The meeting to be ended.
+   * @returns A promise that resolves when the meeting has been successfully ended.
+   */
+  public async endMeeting(meeting: MeetingWithAttendees): Promise<void> {
+    this.logger.debug(`Ending meeting "${meeting.id}"`);
+
+    await this.database.meeting.update({
+      where: { id: meeting.id },
+      data: { status: MeetingStatus.FINISHED },
+    });
+  }
+
   @OnEvent(ApplicationEvent.MEETING_BEFORE_START)
+  /**
+   * Creates a bubble before a meeting.
+   * @param meeting - The meeting with attendees.
+   * @returns A Promise that resolves to void.
+   */
   public async createBubbleBeforeMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
@@ -237,6 +312,11 @@ export class MeetingsService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_CLEANING)
+  /**
+   * Deletes a bubble after a meeting has finished.
+   * @param bubble - The bubble to be deleted.
+   * @returns A promise that resolves when the bubble is deleted.
+   */
   public async deleteBubbleAfterMeeting(bubble: Bubble): Promise<void> {
     const meeting = await this.database.meeting.findFirst({
       where: {
@@ -248,7 +328,13 @@ export class MeetingsService {
     });
     await this.rainbow.deleteBubble(bubble);
   }
+
   @OnEvent(ApplicationEvent.MEETING_DELETE)
+  /**
+   * Deletes the bubble associated with a meeting.
+   * @param meeting - The meeting object containing the bubble information.
+   * @returns A Promise that resolves when the bubble is successfully deleted.
+   */
   public async deleteBubble(meeting: MeetingWithAttendees): Promise<void> {
     this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
     const bubble = this.rainbow.getBubbleByID(meeting.bubbleId);
@@ -256,6 +342,11 @@ export class MeetingsService {
   }
 
   @OnEvent(ApplicationEvent.MEETING_UPDATE)
+  /**
+   * Updates the bubble for a meeting.
+   * @param meeting - The meeting object containing the updated information.
+   * @returns A Promise that resolves to void.
+   */
   public async updateBubble(meeting: MeetingWithAttendees): Promise<void> {
     this.logger.debug(`Updating bubble for meeting "${meeting.id}"`);
     const bubble = this.rainbow.getBubbleByID(meeting.bubbleId);

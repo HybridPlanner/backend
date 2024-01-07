@@ -4,6 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { EnvConfig } from '../config';
 import { DatabaseService } from 'src/database/database.service';
 
+/**
+ * Represents the Rainbow module.
+ */
 @Module({
   imports: [],
   providers: [RainbowService, ConfigService<EnvConfig>, DatabaseService],
