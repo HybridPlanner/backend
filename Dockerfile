@@ -20,4 +20,4 @@ COPY --from=builder /app/prisma ./prisma
 
 ENV NODE_ENV production
 
-CMD [ "npm", "run", "start" ]
+CMD [ "node", "main.js" ]
