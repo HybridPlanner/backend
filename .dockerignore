@@ -3,3 +3,5 @@ Dockerfile
 .dockerignore
 node_modules
 .git
+prisma/database.db
+prisma/database.db-journal
