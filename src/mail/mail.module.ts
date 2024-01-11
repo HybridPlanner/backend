@@ -4,6 +4,7 @@ import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { join } from 'path';
 import { IcsService } from 'src/ics/ics.service';
+import { MeetingsModule } from 'src/meetings/meetings.module';
 
 /**
  * Module for handling email functionality.
@@ -29,6 +30,7 @@ import { IcsService } from 'src/ics/ics.service';
         },
       },
     }),
+    MeetingsModule,
   ],
   providers: [MailService, IcsService],
   exports: [MailService],

@@ -7,6 +7,9 @@ import { EnvConfig } from '../config';
 import { Contact } from 'rainbow-node-sdk/lib/common/models/Contact';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { ConversationsService } from 'rainbow-node-sdk/lib/services/ConversationsService';
+import { ImsService } from 'rainbow-node-sdk/lib/services/ImsService';
+import { Message } from 'rainbow-node-sdk/lib/common/models/Message';
 
 /**
  * Service class for interacting with the RainbowSDK.
@@ -228,5 +231,23 @@ export class RainbowService implements OnApplicationShutdown {
     ).createPublicUrl(bubble);
 
     return url;
+  }
+
+  public async getMessagesFromBubbleId(bubbleId: string): Promise<Message[]> {
+    const conversationService = this.rainbowSDK
+      .conversations as ConversationsService;
+    const imService = this.rainbowSDK.im as ImsService;
+
+    const conversation =
+      await conversationService.getConversationByBubbleId(bubbleId);
+
+    try {
+      const conversationMessages =
+        await imService.getMessagesFromConversation(conversation);
+      return conversationMessages._messages as Message[];
+    } catch (e) {
+      this.logger.error(e);
+      return [];
+    }
   }
 }
