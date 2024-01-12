@@ -16,6 +16,13 @@ export interface EnvConfig {
   RAINBOW_HOST: string;
   RAINBOW_APPLICATION_ID: string;
   RAINBOW_APPLICATION_SECRET: string;
+
+  // Mail settings
+  MAIL_HOST: string;
+  MAIL_PORT: number;
+  MAIL_USER: string;
+  MAIL_PASS: string;
+  MAIL_DEFAULT_FROM: string;
 }
 
 /**
@@ -40,6 +47,15 @@ const configOptions: ConfigModuleOptions = {
     RAINBOW_HOST: Joi.string().default('sandbox').required(),
     RAINBOW_APPLICATION_ID: Joi.string().required(),
     RAINBOW_APPLICATION_SECRET: Joi.string().required(),
+
+    // Mail settings
+    MAIL_HOST: Joi.string().default('mailhog').required(),
+    MAIL_PORT: Joi.number().default(1025).required(),
+    MAIL_USER: Joi.string().default('').required(),
+    MAIL_PASS: Joi.string().default('').required(),
+    MAIL_DEFAULT_FROM: Joi.string()
+      .default('"No Reply" <noreply@example.com>')
+      .required(),
   }),
 };
 
