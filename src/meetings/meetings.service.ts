@@ -268,6 +268,23 @@ export class MeetingsService {
     await this.rainbow.callBubble(bubble);
   }
 
+  @OnEvent(ApplicationEvent.MEETING_END)
+  /**
+   * Hangs up a meeting bubble.
+   * @param meeting - The meeting object.
+   * @returns A promise that resolves when the bubble is hung up.
+   */
+  public async hangupMeetingBubble(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    // Retrieve the meeting data to load the bubble ID
+    const meetingData = await this.findOne(meeting.id);
+
+    this.logger.debug(`Hanging up bubble for meeting "${meetingData.id}"`);
+    const bubble = this.rainbow.getBubbleByID(meetingData.bubbleId);
+    await this.rainbow.hangupBubble(bubble);
+  }
+
   @OnEvent(ApplicationEvent.CONFERENCE_STARTED)
   /**
    * Starts a meeting by updating its status and marking it as started.

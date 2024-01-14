@@ -89,6 +89,25 @@ export class SchedulerService {
     );
   }
 
+  @OnEvent(ApplicationEvent.MEETING_CREATE)
+  /**
+   * Schedules the end of a bubble for a meeting.
+   * @param meeting - The meeting with attendees.
+   * @returns A Promise that resolves when the bubble end is scheduled.
+   */
+  public async scheduleBubbleEnd(meeting: MeetingWithAttendees): Promise<void> {
+    const bubbleEndDate = new Date(meeting.end_date);
+    const endJob = new CronJob(bubbleEndDate, async () => {
+      this.eventEmitter.emit(ApplicationEvent.MEETING_END, meeting);
+    });
+    endJob.start();
+
+    this.schedulerRegistry.addCronJob(
+      `meeting-${meeting.id}-bubble-end`,
+      endJob,
+    );
+  }
+
   @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   /**
    * Schedules bubble cleaning for a given bubble.
@@ -139,6 +158,7 @@ export class SchedulerService {
     meetings.forEach(async (meeting) => {
       this.scheduleBubbleCreation(meeting);
       this.scheduleBubbleStart(meeting);
+      this.scheduleBubbleEnd(meeting);
     });
   }
 }
