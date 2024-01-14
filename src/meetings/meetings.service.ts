@@ -9,6 +9,7 @@ import { RainbowService } from 'src/rainbow/rainbow.service';
 import { Observable, Subject } from 'rxjs';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
+import { Message } from 'rainbow-node-sdk/lib/common/models/Message';
 
 export type MeetingEvent =
   | { type: 'bubbleCreated'; id: number; meeting: MeetingWithAttendees }
@@ -158,10 +159,15 @@ export class MeetingsService {
    * @param bubbleId - The ID of the bubble.
    * @returns A promise that resolves to the found meeting or null if not found.
    */
-  public findMeetingByBubbleId(bubbleId: string): Promise<Meeting | null> {
+  public findMeetingByBubbleId(
+    bubbleId: string,
+  ): Promise<MeetingWithAttendees | null> {
     return this.database.meeting.findFirst({
       where: {
         bubbleId,
+      },
+      include: {
+        attendees: true,
       },
     });
   }
@@ -232,6 +238,18 @@ export class MeetingsService {
     return meeting;
   }
 
+  /**
+   * Retrieves the messages from a meeting.
+   * @param meeting - The meeting object.
+   * @returns A promise that resolves to an array of messages.
+   */
+  public async getMessages(meeting: MeetingWithAttendees): Promise<Message[]> {
+    const messages = await this.rainbow.getMessagesFromBubbleId(
+      meeting.bubbleId,
+    );
+    return messages;
+  }
+
   @OnEvent(ApplicationEvent.MEETING_START)
   /**
    * Starts a meeting.
@@ -269,7 +287,8 @@ export class MeetingsService {
    * @param meeting - The meeting to be ended.
    * @returns A promise that resolves when the meeting has been successfully ended.
    */
-  public async endMeeting(meeting: MeetingWithAttendees): Promise<void> {
+  public async endMeeting(bubble: Bubble): Promise<void> {
+    const meeting = await this.findMeetingByBubbleId(bubble.id);
     this.logger.debug(`Ending meeting "${meeting.id}"`);
 
     await this.database.meeting.update({

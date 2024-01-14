@@ -2,7 +2,9 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { isBefore } from 'date-fns';
+import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 import { IcsService } from 'src/ics/ics.service';
+import { MeetingsService } from 'src/meetings/meetings.service';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 
@@ -11,8 +13,11 @@ import { ApplicationEvent } from 'src/types/MeetingEvents';
  */
 @Injectable()
 export class MailService {
+  private readonly logger = new Logger(MailService.name);
+
   public constructor(
     private mailerService: MailerService,
+    private meetingService: MeetingsService,
     private icsService: IcsService,
   ) {}
 
@@ -123,6 +128,21 @@ export class MailService {
       template: 'meetings/cancellation',
       context: {
         meeting,
+      },
+    });
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_END)
+  public async sendMeetingSummary(bubble: Bubble): Promise<void> {
+    const meeting = await this.meetingService.findMeetingByBubbleId(bubble.id);
+    const messages = await this.meetingService.getMessages(meeting);
+    this.mailerService.sendMail({
+      bcc: meeting.attendees.map((attendee) => attendee.email),
+      subject: 'Your meeting summary',
+      template: 'meetings/summary',
+      context: {
+        meeting,
+        messages,
       },
     });
   }
