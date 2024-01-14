@@ -281,7 +281,7 @@ export class MeetingsService {
     });
   }
 
-  @OnEvent(ApplicationEvent.MEETING_END)
+  @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   /**
    * Ends a meeting by updating its status and marking it as finished.
    * @param meeting - The meeting to be ended.

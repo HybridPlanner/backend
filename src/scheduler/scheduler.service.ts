@@ -89,7 +89,7 @@ export class SchedulerService {
     );
   }
 
-  @OnEvent(ApplicationEvent.MEETING_END)
+  @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   /**
    * Schedules bubble cleaning for a given bubble.
    * @param bubble - The bubble to schedule cleaning for.
@@ -114,14 +114,19 @@ export class SchedulerService {
     );
   }
 
-  @OnEvent(ApplicationEvent.MEETING_CANCEL_END)
+  @OnEvent(ApplicationEvent.CONFERENCE_STARTED)
   /**
    * Cancels the bubble cleaning for a given bubble.
    * @param bubble - The bubble for which the cleaning is to be canceled.
    * @returns A promise that resolves when the cleaning is canceled.
    */
   public async cancelBubbleCleaning(bubble: Bubble): Promise<void> {
-    this.schedulerRegistry.deleteCronJob(`bubble-${bubble.id}-cleaning`);
+    if (
+      this.schedulerRegistry.doesExist('cron', `bubble-${bubble.id}-cleaning`)
+    ) {
+      this.logger.debug(`Canceling bubble cleaning for id ${bubble.id}`);
+      this.schedulerRegistry.deleteCronJob(`bubble-${bubble.id}-cleaning`);
+    }
   }
 
   /**

@@ -68,14 +68,14 @@ export class RainbowService implements OnApplicationShutdown {
     this.rainbowSDK.events.on(
       'rainbow_onbubbleconferencestoppedreceived',
       (bubble: Bubble) => {
-        this.eventEmitter.emit(ApplicationEvent.MEETING_END, bubble);
+        this.eventEmitter.emit(ApplicationEvent.CONFERENCE_STOPPED, bubble);
       },
     );
 
     this.rainbowSDK.events.on(
       'rainbow_onbubbleconferencestartedreceived',
       (bubble: Bubble) => {
-        this.eventEmitter.emit(ApplicationEvent.MEETING_CANCEL_END, bubble);
+        this.eventEmitter.emit(ApplicationEvent.CONFERENCE_STARTED, bubble);
       },
     );
   }
