@@ -132,7 +132,7 @@ export class MailService {
     });
   }
 
-  @OnEvent(ApplicationEvent.MEETING_END)
+  @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   public async sendMeetingSummary(bubble: Bubble): Promise<void> {
     const meeting = await this.meetingService.findMeetingByBubbleId(bubble.id);
     const messages = await this.meetingService.getMessages(meeting);

@@ -205,12 +205,15 @@ export class MeetingsService {
           })),
         },
       },
+      include: {
+        attendees: true,
+      },
     });
 
     this._meetings.next({
       type: 'updated',
       id: meeting.id,
-      meeting: await this.findOneWithAttendees(meeting.id),
+      meeting,
     });
     this.eventEmitter.emit(ApplicationEvent.MEETING_UPDATE, meeting);
     return meeting;
@@ -252,23 +255,48 @@ export class MeetingsService {
 
   @OnEvent(ApplicationEvent.MEETING_START)
   /**
-   * Starts a meeting.
+   * Calls a meeting bubble.
    * @param meeting - The meeting object.
-   * @returns A promise that resolves when the meeting has started.
+   * @returns A promise that resolves when the bubble is called.
    */
-  public async startMeeting(meeting: MeetingWithAttendees): Promise<void> {
-    this.logger.debug(`Starting meeting "${meeting.id}"`);
+  public async callMeetingBubble(meeting: MeetingWithAttendees): Promise<void> {
+    // Retrieve the meeting data to load the bubble ID
+    const meetingData = await this.findOne(meeting.id);
 
-    const meetingData = await this.database.meeting.findUniqueOrThrow({
-      where: { id: meeting.id },
-      include: { attendees: true },
-    });
-
+    this.logger.debug(`Calling bubble for meeting "${meetingData.id}"`);
     const bubble = this.rainbow.getBubbleByID(meetingData.bubbleId);
-
     await this.rainbow.callBubble(bubble);
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_END)
+  /**
+   * Hangs up a meeting bubble.
+   * @param meeting - The meeting object.
+   * @returns A promise that resolves when the bubble is hung up.
+   */
+  public async hangupMeetingBubble(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    // Retrieve the meeting data to load the bubble ID
+    const meetingData = await this.findOne(meeting.id);
+
+    this.logger.debug(`Hanging up bubble for meeting "${meetingData.id}"`);
+    const bubble = this.rainbow.getBubbleByID(meetingData.bubbleId);
+    await this.rainbow.hangupBubble(bubble);
+  }
+
+  @OnEvent(ApplicationEvent.CONFERENCE_STARTED)
+  /**
+   * Starts a meeting by updating its status and marking it as started.
+   * @param meeting - The meeting to be started.
+   * @returns A promise that resolves when the meeting has been successfully started.
+   */
+  public async startMeeting(bubble: Bubble): Promise<void> {
+    const meeting = await this.findMeetingByBubbleId(bubble.id);
+    if (!meeting) return;
 
     // Update the meeting status
+    this.logger.debug(`Starting meeting "${meeting.id}"`);
     await this.database.meeting.update({
       where: { id: meeting.id },
       data: { status: MeetingStatus.STARTED },
@@ -276,12 +304,12 @@ export class MeetingsService {
 
     this._meetings.next({
       type: 'started',
-      id: meetingData.id,
-      url: meetingData.publicUrl,
+      id: meeting.id,
+      url: meeting.publicUrl,
     });
   }
 
-  @OnEvent(ApplicationEvent.MEETING_END)
+  @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   /**
    * Ends a meeting by updating its status and marking it as finished.
    * @param meeting - The meeting to be ended.

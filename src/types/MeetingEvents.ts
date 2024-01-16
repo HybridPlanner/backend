@@ -28,11 +28,6 @@ export enum ApplicationEvent {
   MEETING_END = 'meeting.end',
 
   /**
-   * Event triggered when the end of a meeting is canceled.
-   */
-  MEETING_CANCEL_END = 'meeting.cancelEnd',
-
-  /**
    * Event triggered before a meeting starts.
    */
   MEETING_BEFORE_START = 'meeting.beforeStart',
@@ -41,4 +36,14 @@ export enum ApplicationEvent {
    * Event triggered for meeting cleaning.
    */
   MEETING_CLEANING = 'meeting.cleaning',
+
+  /**
+   * Event triggered when a conference is started.
+   */
+  CONFERENCE_STARTED = 'conference.started',
+
+  /**
+   * Event triggered when a conference is stopped.
+   */
+  CONFERENCE_STOPPED = 'conference.stopped',
 }
