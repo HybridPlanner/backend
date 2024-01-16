@@ -233,6 +233,11 @@ export class RainbowService implements OnApplicationShutdown {
     return url;
   }
 
+  /**
+   * Retrieves the history of messages for a given bubble.
+   * @param bubbleId - The ID of the bubble for which to retrieve the message history.
+   * @returns A Promise that resolves to an array of Message objects.
+   */
   public async getMessagesFromBubbleId(bubbleId: string): Promise<Message[]> {
     const conversationService = this.rainbowSDK
       .conversations as ConversationsService;
