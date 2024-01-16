@@ -108,6 +108,66 @@ export class SchedulerService {
     );
   }
 
+  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  /**
+   * Cancels the bubble creation for a meeting.
+   * @param meeting - The meeting for which the bubble creation is to be canceled.
+   * @returns A promise that resolves when the bubble creation is canceled.
+   */
+  public async cancelBubbleCreation(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    if (
+      this.schedulerRegistry.doesExist(
+        'cron',
+        `meeting-${meeting.id}-bubble-creation`,
+      )
+    ) {
+      this.logger.debug(`Canceling bubble creation for meeting ${meeting.id}`);
+      this.schedulerRegistry.deleteCronJob(
+        `meeting-${meeting.id}-bubble-creation`,
+      );
+    }
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  /**
+   * Cancels the bubble start for a meeting.
+   * @param meeting - The meeting for which the bubble start is to be canceled.
+   * @returns A promise that resolves when the bubble start is canceled.
+   */
+  public async cancelBubbleStart(meeting: MeetingWithAttendees): Promise<void> {
+    if (
+      this.schedulerRegistry.doesExist(
+        'cron',
+        `meeting-${meeting.id}-bubble-start`,
+      )
+    ) {
+      this.logger.debug(`Canceling bubble start for meeting ${meeting.id}`);
+      this.schedulerRegistry.deleteCronJob(
+        `meeting-${meeting.id}-bubble-start`,
+      );
+    }
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  /**
+   * Cancels the bubble end for a meeting.
+   * @param meeting - The meeting for which the bubble end is to be canceled.
+   * @returns A promise that resolves when the bubble end is canceled.
+   */
+  public async cancelBubbleEnd(meeting: MeetingWithAttendees): Promise<void> {
+    if (
+      this.schedulerRegistry.doesExist(
+        'cron',
+        `meeting-${meeting.id}-bubble-end`,
+      )
+    ) {
+      this.logger.debug(`Canceling bubble end for meeting ${meeting.id}`);
+      this.schedulerRegistry.deleteCronJob(`meeting-${meeting.id}-bubble-end`);
+    }
+  }
+
   @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   /**
    * Schedules bubble cleaning for a given bubble.

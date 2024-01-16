@@ -383,8 +383,9 @@ export class MeetingsService {
    * @returns A Promise that resolves when the bubble is successfully deleted.
    */
   public async deleteBubble(meeting: MeetingWithAttendees): Promise<void> {
-    this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
     const bubble = this.rainbow.getBubbleByID(meeting.bubbleId);
+    if (!bubble) return;
+    this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
     await this.rainbow.deleteBubble(bubble);
   }
 
