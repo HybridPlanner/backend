@@ -203,6 +203,11 @@ export class MailService {
   }
 
   @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
+  /**
+   * Sends meeting summary to the attendees when a conference is stopped.
+   * @param bubble - The bubble object.
+   * @returns A Promise that resolves when the email has been sent.
+   */
   public async sendMeetingSummary(bubble: Bubble): Promise<void> {
     const meeting = await this.meetingService.findMeetingByBubbleId(bubble.id);
     const messages = await this.meetingService.getMessages(meeting);
