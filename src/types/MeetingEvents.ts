@@ -13,6 +13,11 @@ export enum ApplicationEvent {
   MEETING_UPDATE = 'meeting.update',
 
   /**
+   * Event triggered when a meeting is manually updated by a user.
+   */
+  MEETING_MANUAL_UPDATE = 'meeting.manualUpdate',
+
+  /**
    * Event triggered when a meeting is deleted.
    */
   MEETING_DELETE = 'meeting.delete',

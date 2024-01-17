@@ -208,6 +208,22 @@ export class RainbowService implements OnApplicationShutdown {
   }
 
   /**
+   * Checks if there is any user in the bubble's conference.
+   * @param bubble - The bubble to check.
+   * @returns A promise that resolves with a boolean indicating whether there are users in the bubble's conference.
+   * @remarks This method is used to check if the bubble's conference is empty before hanging up the bubble.
+   */
+  public async isBubbleConferenceEmpty(bubble: Bubble): Promise<boolean> {
+    const conference = (await (
+      this.rainbowSDK.bubbles as BubblesService
+    ).snapshotConference(bubble.id)) as {
+      _participants: { list: unknown[] };
+    };
+
+    return conference?._participants?.list?.length === 0;
+  }
+
+  /**
    * Hangs up a bubble by stopping the conference or webinar associated with it.
    * @param bubble - The bubble to hang up.
    * @returns A promise that resolves with the conference object.

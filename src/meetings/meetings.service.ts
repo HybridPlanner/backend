@@ -10,6 +10,9 @@ import { Observable, Subject } from 'rxjs';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 import { Message } from 'rainbow-node-sdk/lib/common/models/Message';
+import { addMinutes } from 'date-fns';
+
+const MEETING_HANGUP_DELAY = 10;
 
 export type MeetingEvent =
   | { type: 'bubbleCreated'; id: number; meeting: MeetingWithAttendees }
@@ -279,9 +282,22 @@ export class MeetingsService {
   ): Promise<void> {
     // Retrieve the meeting data to load the bubble ID
     const meetingData = await this.findOne(meeting.id);
+    const bubble = this.rainbow.getBubbleByID(meetingData.bubbleId);
+    if (!bubble) return;
+
+    const isEmpty = await this.rainbow.isBubbleConferenceEmpty(bubble);
+
+    if (!isEmpty) {
+      this.logger.debug(
+        `Postponing hangup for bubble "${bubble.id}" of meeting "${meetingData.id}"`,
+      );
+      await this.update(meetingData.id, {
+        end_date: addMinutes(new Date(), MEETING_HANGUP_DELAY),
+      });
+      return;
+    }
 
     this.logger.debug(`Hanging up bubble for meeting "${meetingData.id}"`);
-    const bubble = this.rainbow.getBubbleByID(meetingData.bubbleId);
     await this.rainbow.hangupBubble(bubble);
   }
 
@@ -334,6 +350,7 @@ export class MeetingsService {
   public async createBubbleBeforeMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
+    if (meeting.bubbleId) return;
     this.logger.debug(`Creating bubble for meeting "${meeting.id}"`);
     const bubble = await this.rainbow.createBubble(meeting.title);
 
@@ -389,15 +406,16 @@ export class MeetingsService {
     await this.rainbow.deleteBubble(bubble);
   }
 
-  @OnEvent(ApplicationEvent.MEETING_UPDATE)
+  @OnEvent(ApplicationEvent.MEETING_MANUAL_UPDATE)
   /**
    * Updates the bubble for a meeting.
    * @param meeting - The meeting object containing the updated information.
    * @returns A Promise that resolves to void.
    */
   public async updateBubble(meeting: MeetingWithAttendees): Promise<void> {
-    this.logger.debug(`Updating bubble for meeting "${meeting.id}"`);
     const bubble = this.rainbow.getBubbleByID(meeting.bubbleId);
+    if (!bubble) return;
+    this.logger.debug(`Updating bubble for meeting "${meeting.id}"`);
     await this.rainbow.updateBubble(bubble.id, meeting.title);
   }
 }

@@ -21,6 +21,8 @@ import { Attendee, Meeting } from '@prisma/client';
 import { isAfter, isValid } from 'date-fns';
 import { MeetingWithAttendees } from './meetings.type';
 import { Observable, filter, map } from 'rxjs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ApplicationEvent } from 'src/types/MeetingEvents';
 
 /**
  * Controller for managing meetings.
@@ -29,7 +31,10 @@ import { Observable, filter, map } from 'rxjs';
 export class MeetingsController {
   private readonly logger = new Logger(MeetingsController.name);
 
-  public constructor(private readonly meetingsService: MeetingsService) {}
+  public constructor(
+    private readonly meetingsService: MeetingsService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   /**
    * Create a new meeting.
@@ -108,13 +113,16 @@ export class MeetingsController {
    * @param id - The ID of the meeting to update.
    * @param updateMeetingDto - The data for updating the meeting.
    * @returns A promise that resolves to the updated meeting.
+   * @note Emits a MEETING_MANUAL_UPDATE event.
    */
   @Patch(':id')
-  public update(
+  public async update(
     @Param('id') id: string,
     @Body() updateMeetingDto: UpdateMeetingDto,
   ): Promise<Meeting> {
-    return this.meetingsService.update(+id, updateMeetingDto);
+    const meeting = await this.meetingsService.update(+id, updateMeetingDto);
+    this.eventEmitter.emit(ApplicationEvent.MEETING_MANUAL_UPDATE, meeting);
+    return meeting;
   }
 
   /**
