@@ -7,6 +7,9 @@ import { EnvConfig } from '../config';
 import { Contact } from 'rainbow-node-sdk/lib/common/models/Contact';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
+import { ConversationsService } from 'rainbow-node-sdk/lib/services/ConversationsService';
+import { ImsService } from 'rainbow-node-sdk/lib/services/ImsService';
+import { Message } from 'rainbow-node-sdk/lib/common/models/Message';
 
 /**
  * Service class for interacting with the RainbowSDK.
@@ -65,14 +68,14 @@ export class RainbowService implements OnApplicationShutdown {
     this.rainbowSDK.events.on(
       'rainbow_onbubbleconferencestoppedreceived',
       (bubble: Bubble) => {
-        this.eventEmitter.emit(ApplicationEvent.MEETING_END, bubble);
+        this.eventEmitter.emit(ApplicationEvent.CONFERENCE_STOPPED, bubble);
       },
     );
 
     this.rainbowSDK.events.on(
       'rainbow_onbubbleconferencestartedreceived',
       (bubble: Bubble) => {
-        this.eventEmitter.emit(ApplicationEvent.MEETING_CANCEL_END, bubble);
+        this.eventEmitter.emit(ApplicationEvent.CONFERENCE_STARTED, bubble);
       },
     );
   }
@@ -205,6 +208,22 @@ export class RainbowService implements OnApplicationShutdown {
   }
 
   /**
+   * Checks if there is any user in the bubble's conference.
+   * @param bubble - The bubble to check.
+   * @returns A promise that resolves with a boolean indicating whether there are users in the bubble's conference.
+   * @remarks This method is used to check if the bubble's conference is empty before hanging up the bubble.
+   */
+  public async isBubbleConferenceEmpty(bubble: Bubble): Promise<boolean> {
+    const conference = (await (
+      this.rainbowSDK.bubbles as BubblesService
+    ).snapshotConference(bubble.id)) as {
+      _participants: { list: unknown[] };
+    };
+
+    return conference?._participants?.list?.length === 0;
+  }
+
+  /**
    * Hangs up a bubble by stopping the conference or webinar associated with it.
    * @param bubble - The bubble to hang up.
    * @returns A promise that resolves with the conference object.
@@ -228,5 +247,28 @@ export class RainbowService implements OnApplicationShutdown {
     ).createPublicUrl(bubble);
 
     return url;
+  }
+
+  /**
+   * Retrieves the history of messages for a given bubble.
+   * @param bubbleId - The ID of the bubble for which to retrieve the message history.
+   * @returns A Promise that resolves to an array of Message objects.
+   */
+  public async getMessagesFromBubbleId(bubbleId: string): Promise<Message[]> {
+    const conversationService = this.rainbowSDK
+      .conversations as ConversationsService;
+    const imService = this.rainbowSDK.im as ImsService;
+
+    const conversation =
+      await conversationService.getConversationByBubbleId(bubbleId);
+
+    try {
+      const conversationMessages =
+        await imService.getMessagesFromConversation(conversation);
+      return conversationMessages._messages as Message[];
+    } catch (e) {
+      this.logger.error(e);
+      return [];
+    }
   }
 }

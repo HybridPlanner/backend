@@ -2,7 +2,9 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { isBefore } from 'date-fns';
+import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
 import { IcsService } from 'src/ics/ics.service';
+import { MeetingsService } from 'src/meetings/meetings.service';
 import { MeetingWithAttendees } from 'src/meetings/meetings.type';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 
@@ -11,8 +13,11 @@ import { ApplicationEvent } from 'src/types/MeetingEvents';
  */
 @Injectable()
 export class MailService {
+  private readonly logger = new Logger(MailService.name);
+
   public constructor(
     private mailerService: MailerService,
+    private meetingService: MeetingsService,
     private icsService: IcsService,
   ) {}
 
@@ -89,7 +94,12 @@ export class MailService {
     meeting: MeetingWithAttendees,
   ): Promise<void> {
     const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+    const icsFile = await this.icsService.createIcsFile(meeting);
     const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
+    const fileName = `meeting-${meeting.title.replace(
+      /[^a-zA-Z0-9]/g,
+      '',
+    )}.ics`; // remove special characters from title
 
     this.mailerService.sendMail({
       bcc: attendeesMails,
@@ -99,6 +109,71 @@ export class MailService {
         meeting,
         url,
       },
+      attachments: [
+        {
+          filename: fileName,
+          content: Buffer.from(icsFile, 'utf-8'),
+          contentType: 'text/calendar',
+        },
+      ],
+    });
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_START)
+  /**
+   * Sends an email to the attendees when a meeting starts.
+   * @param meeting - The meeting object.
+   * @returns A Promise that resolves when the email is sent successfully.
+   */
+  public async sendMailMeetingStarted(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+    const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
+
+    this.mailerService.sendMail({
+      bcc: attendeesMails,
+      subject: 'Your meeting has started',
+      template: 'meetings/start',
+      context: {
+        meeting,
+        url,
+      },
+    });
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_MANUAL_UPDATE)
+  /**
+   * Sends an email notification to the attendees when a meeting is updated.
+   * @param meeting - The meeting that has been updated.
+   * @returns A Promise that resolves when the email has been sent.
+   */
+  public async sendMailMeetingUpdated(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+    const icsFile = await this.icsService.createIcsFile(meeting);
+    const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
+    const fileName = `meeting-${meeting.title.replace(
+      /[^a-zA-Z0-9]/g,
+      '',
+    )}.ics`; // remove special characters from title
+
+    this.mailerService.sendMail({
+      bcc: attendeesMails,
+      subject: 'Your meeting has been updated',
+      template: 'meetings/update',
+      context: {
+        meeting,
+        url,
+      },
+      attachments: [
+        {
+          filename: fileName,
+          content: Buffer.from(icsFile, 'utf-8'),
+          contentType: 'text/calendar',
+        },
+      ],
     });
   }
 
@@ -123,6 +198,26 @@ export class MailService {
       template: 'meetings/cancellation',
       context: {
         meeting,
+      },
+    });
+  }
+
+  @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
+  /**
+   * Sends meeting summary to the attendees when a conference is stopped.
+   * @param bubble - The bubble object.
+   * @returns A Promise that resolves when the email has been sent.
+   */
+  public async sendMeetingSummary(bubble: Bubble): Promise<void> {
+    const meeting = await this.meetingService.findMeetingByBubbleId(bubble.id);
+    const messages = await this.meetingService.getMessages(meeting);
+    this.mailerService.sendMail({
+      bcc: meeting.attendees.map((attendee) => attendee.email),
+      subject: 'Your meeting summary',
+      template: 'meetings/summary',
+      context: {
+        meeting,
+        messages,
       },
     });
   }

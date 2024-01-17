@@ -1,0 +1,15 @@
+<p>Dear Sir or Madam,</p>
+<p>The meeting "{{meeting.title}}" has ended.</p>
+<p>Meeting Summary :</p>
+<ul>
+  <li>Title: {{meeting.title}}</li>
+  <li>Description: {{meeting.description}}</li>
+  <li>Start date: {{meeting.start_date}}</li>
+  <li>End date: {{meeting.end_date}}</li>
+</ul>
+<p>Here is the summary of your messages :</p>
+<ul>
+  {{#each messages}}
+    <li>{{this.date}} - {{this.from}} : {{this.content}}</li>
+  {{/each}}
+</ul>

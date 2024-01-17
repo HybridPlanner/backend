@@ -89,7 +89,106 @@ export class SchedulerService {
     );
   }
 
-  @OnEvent(ApplicationEvent.MEETING_END)
+  @OnEvent(ApplicationEvent.MEETING_CREATE)
+  /**
+   * Schedules the end of a bubble for a meeting.
+   * @param meeting - The meeting with attendees.
+   * @returns A Promise that resolves when the bubble end is scheduled.
+   */
+  public async scheduleBubbleEnd(meeting: MeetingWithAttendees): Promise<void> {
+    const bubbleEndDate = new Date(meeting.end_date);
+    const endJob = new CronJob(bubbleEndDate, async () => {
+      this.eventEmitter.emit(ApplicationEvent.MEETING_END, meeting);
+    });
+    endJob.start();
+
+    this.schedulerRegistry.addCronJob(
+      `meeting-${meeting.id}-bubble-end`,
+      endJob,
+    );
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  /**
+   * Cancels the bubble creation for a meeting.
+   * @param meeting - The meeting for which the bubble creation is to be canceled.
+   * @returns A promise that resolves when the bubble creation is canceled.
+   */
+  public async cancelBubbleCreation(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    if (
+      this.schedulerRegistry.doesExist(
+        'cron',
+        `meeting-${meeting.id}-bubble-creation`,
+      )
+    ) {
+      this.logger.debug(`Canceling bubble creation for meeting ${meeting.id}`);
+      this.schedulerRegistry.deleteCronJob(
+        `meeting-${meeting.id}-bubble-creation`,
+      );
+    }
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  /**
+   * Cancels the bubble start for a meeting.
+   * @param meeting - The meeting for which the bubble start is to be canceled.
+   * @returns A promise that resolves when the bubble start is canceled.
+   */
+  public async cancelBubbleStart(meeting: MeetingWithAttendees): Promise<void> {
+    if (
+      this.schedulerRegistry.doesExist(
+        'cron',
+        `meeting-${meeting.id}-bubble-start`,
+      )
+    ) {
+      this.logger.debug(`Canceling bubble start for meeting ${meeting.id}`);
+      this.schedulerRegistry.deleteCronJob(
+        `meeting-${meeting.id}-bubble-start`,
+      );
+    }
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_DELETE)
+  /**
+   * Cancels the bubble end for a meeting.
+   * @param meeting - The meeting for which the bubble end is to be canceled.
+   * @returns A promise that resolves when the bubble end is canceled.
+   */
+  public async cancelBubbleEnd(meeting: MeetingWithAttendees): Promise<void> {
+    if (
+      this.schedulerRegistry.doesExist(
+        'cron',
+        `meeting-${meeting.id}-bubble-end`,
+      )
+    ) {
+      this.logger.debug(`Canceling bubble end for meeting ${meeting.id}`);
+      this.schedulerRegistry.deleteCronJob(`meeting-${meeting.id}-bubble-end`);
+    }
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_MANUAL_UPDATE)
+  /**
+   * Updates meeting cron jobs.
+   *
+   * Deletes the old cron jobs and schedules new ones.
+   * @param meeting - The updated meeting.
+   * @returns A promise that resolves when the cron jobs are updated.
+   */
+  public async updateMeetingCronJobs(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    this.logger.debug(`Updating cron jobs for meeting ${meeting.id}`);
+    this.cancelBubbleCreation(meeting);
+    this.cancelBubbleStart(meeting);
+    this.cancelBubbleEnd(meeting);
+    this.scheduleBubbleCreation(meeting);
+    this.scheduleBubbleStart(meeting);
+    this.scheduleBubbleEnd(meeting);
+  }
+
+  @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   /**
    * Schedules bubble cleaning for a given bubble.
    * @param bubble - The bubble to schedule cleaning for.
@@ -114,14 +213,19 @@ export class SchedulerService {
     );
   }
 
-  @OnEvent(ApplicationEvent.MEETING_CANCEL_END)
+  @OnEvent(ApplicationEvent.CONFERENCE_STARTED)
   /**
    * Cancels the bubble cleaning for a given bubble.
    * @param bubble - The bubble for which the cleaning is to be canceled.
    * @returns A promise that resolves when the cleaning is canceled.
    */
   public async cancelBubbleCleaning(bubble: Bubble): Promise<void> {
-    this.schedulerRegistry.deleteCronJob(`bubble-${bubble.id}-cleaning`);
+    if (
+      this.schedulerRegistry.doesExist('cron', `bubble-${bubble.id}-cleaning`)
+    ) {
+      this.logger.debug(`Canceling bubble cleaning for id ${bubble.id}`);
+      this.schedulerRegistry.deleteCronJob(`bubble-${bubble.id}-cleaning`);
+    }
   }
 
   /**
@@ -134,6 +238,7 @@ export class SchedulerService {
     meetings.forEach(async (meeting) => {
       this.scheduleBubbleCreation(meeting);
       this.scheduleBubbleStart(meeting);
+      this.scheduleBubbleEnd(meeting);
     });
   }
 }

@@ -9,6 +9,10 @@ import { RainbowService } from 'src/rainbow/rainbow.service';
 import { Observable, Subject } from 'rxjs';
 import { ApplicationEvent } from 'src/types/MeetingEvents';
 import { Bubble } from 'rainbow-node-sdk/lib/common/models/Bubble';
+import { Message } from 'rainbow-node-sdk/lib/common/models/Message';
+import { addMinutes } from 'date-fns';
+
+const MEETING_HANGUP_DELAY = 10;
 
 export type MeetingEvent =
   | { type: 'bubbleCreated'; id: number; meeting: MeetingWithAttendees }
@@ -158,10 +162,15 @@ export class MeetingsService {
    * @param bubbleId - The ID of the bubble.
    * @returns A promise that resolves to the found meeting or null if not found.
    */
-  public findMeetingByBubbleId(bubbleId: string): Promise<Meeting | null> {
+  public findMeetingByBubbleId(
+    bubbleId: string,
+  ): Promise<MeetingWithAttendees | null> {
     return this.database.meeting.findFirst({
       where: {
         bubbleId,
+      },
+      include: {
+        attendees: true,
       },
     });
   }
@@ -199,12 +208,15 @@ export class MeetingsService {
           })),
         },
       },
+      include: {
+        attendees: true,
+      },
     });
 
     this._meetings.next({
       type: 'updated',
       id: meeting.id,
-      meeting: await this.findOneWithAttendees(meeting.id),
+      meeting,
     });
     this.eventEmitter.emit(ApplicationEvent.MEETING_UPDATE, meeting);
     return meeting;
@@ -232,25 +244,75 @@ export class MeetingsService {
     return meeting;
   }
 
+  /**
+   * Retrieves the messages from a meeting.
+   * @param meeting - The meeting object.
+   * @returns A promise that resolves to an array of messages.
+   */
+  public async getMessages(meeting: MeetingWithAttendees): Promise<Message[]> {
+    const messages = await this.rainbow.getMessagesFromBubbleId(
+      meeting.bubbleId,
+    );
+    return messages;
+  }
+
   @OnEvent(ApplicationEvent.MEETING_START)
   /**
-   * Starts a meeting.
+   * Calls a meeting bubble.
    * @param meeting - The meeting object.
-   * @returns A promise that resolves when the meeting has started.
+   * @returns A promise that resolves when the bubble is called.
    */
-  public async startMeeting(meeting: MeetingWithAttendees): Promise<void> {
-    this.logger.debug(`Starting meeting "${meeting.id}"`);
+  public async callMeetingBubble(meeting: MeetingWithAttendees): Promise<void> {
+    // Retrieve the meeting data to load the bubble ID
+    const meetingData = await this.findOne(meeting.id);
 
-    const meetingData = await this.database.meeting.findUniqueOrThrow({
-      where: { id: meeting.id },
-      include: { attendees: true },
-    });
-
+    this.logger.debug(`Calling bubble for meeting "${meetingData.id}"`);
     const bubble = this.rainbow.getBubbleByID(meetingData.bubbleId);
-
     await this.rainbow.callBubble(bubble);
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_END)
+  /**
+   * Hangs up a meeting bubble.
+   * @param meeting - The meeting object.
+   * @returns A promise that resolves when the bubble is hung up.
+   */
+  public async hangupMeetingBubble(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    // Retrieve the meeting data to load the bubble ID
+    const meetingData = await this.findOne(meeting.id);
+    const bubble = this.rainbow.getBubbleByID(meetingData.bubbleId);
+    if (!bubble) return;
+
+    const isEmpty = await this.rainbow.isBubbleConferenceEmpty(bubble);
+
+    if (!isEmpty) {
+      this.logger.debug(
+        `Postponing hangup for bubble "${bubble.id}" of meeting "${meetingData.id}"`,
+      );
+      await this.update(meetingData.id, {
+        end_date: addMinutes(new Date(), MEETING_HANGUP_DELAY),
+      });
+      return;
+    }
+
+    this.logger.debug(`Hanging up bubble for meeting "${meetingData.id}"`);
+    await this.rainbow.hangupBubble(bubble);
+  }
+
+  @OnEvent(ApplicationEvent.CONFERENCE_STARTED)
+  /**
+   * Starts a meeting by updating its status and marking it as started.
+   * @param meeting - The meeting to be started.
+   * @returns A promise that resolves when the meeting has been successfully started.
+   */
+  public async startMeeting(bubble: Bubble): Promise<void> {
+    const meeting = await this.findMeetingByBubbleId(bubble.id);
+    if (!meeting) return;
 
     // Update the meeting status
+    this.logger.debug(`Starting meeting "${meeting.id}"`);
     await this.database.meeting.update({
       where: { id: meeting.id },
       data: { status: MeetingStatus.STARTED },
@@ -258,18 +320,19 @@ export class MeetingsService {
 
     this._meetings.next({
       type: 'started',
-      id: meetingData.id,
-      url: meetingData.publicUrl,
+      id: meeting.id,
+      url: meeting.publicUrl,
     });
   }
 
-  @OnEvent(ApplicationEvent.MEETING_END)
+  @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   /**
    * Ends a meeting by updating its status and marking it as finished.
    * @param meeting - The meeting to be ended.
    * @returns A promise that resolves when the meeting has been successfully ended.
    */
-  public async endMeeting(meeting: MeetingWithAttendees): Promise<void> {
+  public async endMeeting(bubble: Bubble): Promise<void> {
+    const meeting = await this.findMeetingByBubbleId(bubble.id);
     this.logger.debug(`Ending meeting "${meeting.id}"`);
 
     await this.database.meeting.update({
@@ -287,6 +350,7 @@ export class MeetingsService {
   public async createBubbleBeforeMeeting(
     meeting: MeetingWithAttendees,
   ): Promise<void> {
+    if (meeting.bubbleId) return;
     this.logger.debug(`Creating bubble for meeting "${meeting.id}"`);
     const bubble = await this.rainbow.createBubble(meeting.title);
 
@@ -336,20 +400,22 @@ export class MeetingsService {
    * @returns A Promise that resolves when the bubble is successfully deleted.
    */
   public async deleteBubble(meeting: MeetingWithAttendees): Promise<void> {
-    this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
     const bubble = this.rainbow.getBubbleByID(meeting.bubbleId);
+    if (!bubble) return;
+    this.logger.debug(`Deleting bubble for meeting "${meeting.id}"`);
     await this.rainbow.deleteBubble(bubble);
   }
 
-  @OnEvent(ApplicationEvent.MEETING_UPDATE)
+  @OnEvent(ApplicationEvent.MEETING_MANUAL_UPDATE)
   /**
    * Updates the bubble for a meeting.
    * @param meeting - The meeting object containing the updated information.
    * @returns A Promise that resolves to void.
    */
   public async updateBubble(meeting: MeetingWithAttendees): Promise<void> {
-    this.logger.debug(`Updating bubble for meeting "${meeting.id}"`);
     const bubble = this.rainbow.getBubbleByID(meeting.bubbleId);
+    if (!bubble) return;
+    this.logger.debug(`Updating bubble for meeting "${meeting.id}"`);
     await this.rainbow.updateBubble(bubble.id, meeting.title);
   }
 }
