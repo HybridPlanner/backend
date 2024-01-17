@@ -119,6 +119,29 @@ export class MailService {
     });
   }
 
+  @OnEvent(ApplicationEvent.MEETING_START)
+  /**
+   * Sends an email to the attendees when a meeting starts.
+   * @param meeting - The meeting object.
+   * @returns A Promise that resolves when the email is sent successfully.
+   */
+  public async sendMailMeetingStarted(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+    const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
+
+    this.mailerService.sendMail({
+      bcc: attendeesMails,
+      subject: 'Your meeting has started',
+      template: 'meetings/start',
+      context: {
+        meeting,
+        url,
+      },
+    });
+  }
+
   @OnEvent(ApplicationEvent.MEETING_MANUAL_UPDATE)
   /**
    * Sends an email notification to the attendees when a meeting is updated.
