@@ -168,6 +168,26 @@ export class SchedulerService {
     }
   }
 
+  @OnEvent(ApplicationEvent.MEETING_MANUAL_UPDATE)
+  /**
+   * Updates meeting cron jobs.
+   *
+   * Deletes the old cron jobs and schedules new ones.
+   * @param meeting - The updated meeting.
+   * @returns A promise that resolves when the cron jobs are updated.
+   */
+  public async updateMeetingCronJobs(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    this.logger.debug(`Updating cron jobs for meeting ${meeting.id}`);
+    this.cancelBubbleCreation(meeting);
+    this.cancelBubbleStart(meeting);
+    this.cancelBubbleEnd(meeting);
+    this.scheduleBubbleCreation(meeting);
+    this.scheduleBubbleStart(meeting);
+    this.scheduleBubbleEnd(meeting);
+  }
+
   @OnEvent(ApplicationEvent.CONFERENCE_STOPPED)
   /**
    * Schedules bubble cleaning for a given bubble.

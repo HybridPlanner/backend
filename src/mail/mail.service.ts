@@ -94,7 +94,12 @@ export class MailService {
     meeting: MeetingWithAttendees,
   ): Promise<void> {
     const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+    const icsFile = await this.icsService.createIcsFile(meeting);
     const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
+    const fileName = `meeting-${meeting.title.replace(
+      /[^a-zA-Z0-9]/g,
+      '',
+    )}.ics`; // remove special characters from title
 
     this.mailerService.sendMail({
       bcc: attendeesMails,
@@ -104,6 +109,71 @@ export class MailService {
         meeting,
         url,
       },
+      attachments: [
+        {
+          filename: fileName,
+          content: Buffer.from(icsFile, 'utf-8'),
+          contentType: 'text/calendar',
+        },
+      ],
+    });
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_START)
+  /**
+   * Sends an email to the attendees when a meeting starts.
+   * @param meeting - The meeting object.
+   * @returns A Promise that resolves when the email is sent successfully.
+   */
+  public async sendMailMeetingStarted(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+    const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
+
+    this.mailerService.sendMail({
+      bcc: attendeesMails,
+      subject: 'Your meeting has started',
+      template: 'meetings/start',
+      context: {
+        meeting,
+        url,
+      },
+    });
+  }
+
+  @OnEvent(ApplicationEvent.MEETING_MANUAL_UPDATE)
+  /**
+   * Sends an email notification to the attendees when a meeting is updated.
+   * @param meeting - The meeting that has been updated.
+   * @returns A Promise that resolves when the email has been sent.
+   */
+  public async sendMailMeetingUpdated(
+    meeting: MeetingWithAttendees,
+  ): Promise<void> {
+    const attendeesMails: string[] = meeting.attendees.map((a) => a.email);
+    const icsFile = await this.icsService.createIcsFile(meeting);
+    const url = process.env.URL_FRONTEND + `/meeting/${meeting.id}`;
+    const fileName = `meeting-${meeting.title.replace(
+      /[^a-zA-Z0-9]/g,
+      '',
+    )}.ics`; // remove special characters from title
+
+    this.mailerService.sendMail({
+      bcc: attendeesMails,
+      subject: 'Your meeting has been updated',
+      template: 'meetings/update',
+      context: {
+        meeting,
+        url,
+      },
+      attachments: [
+        {
+          filename: fileName,
+          content: Buffer.from(icsFile, 'utf-8'),
+          contentType: 'text/calendar',
+        },
+      ],
     });
   }
 
