@@ -18,7 +18,7 @@ import { MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 import { Attendee, Meeting } from '@prisma/client';
-import { isAfter, isValid } from 'date-fns';
+import { isValid } from 'date-fns';
 import { MeetingWithAttendees } from './meetings.type';
 import { Observable, filter, map } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -69,10 +69,7 @@ export class MeetingsController {
       );
     }
 
-    if (isAfter(previousDate, new Date())) {
-      throw new BadRequestException('Previous date must be in the past');
-    }
-
+    this.logger.debug(`Now: ${new Date().toISOString()}`);
     this.logger.debug(`Finding meetings before ${previousDate.toISOString()}`);
 
     const meetings = await this.meetingsService.findAllPrevious(previousDate);
